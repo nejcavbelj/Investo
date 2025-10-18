@@ -1,0 +1,32 @@
+# Core dependencies
+python-telegram-bot>=20.0
+yfinance>=0.2.0
+requests>=2.28.0
+python-dotenv>=1.0.0
+
+# AI and analysis
+openai>=1.0.0
+vaderSentiment>=3.3.2
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.24.0
+
+# Reddit integration
+praw>=7.7.0
+
+# Report generation
+reportlab>=4.0.0
+jinja2>=3.1.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Optional: Enhanced logging
+colorlog>=6.7.0
+
+# Optional: Caching
+redis>=4.5.0
