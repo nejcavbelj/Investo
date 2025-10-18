@@ -30,7 +30,7 @@ a { color:var(--orange); text-decoration:underline; }
 .card h3 { margin:0 0 8px 0; color:var(--orange); font-weight:600; }
 
 .donut {
-  --val: 66;
+  --val: 69;
   width:140px; height:140px; border-radius:50%;
   background:conic-gradient(var(--green) calc(var(--val)*1%), #333 0);
   display:inline-grid; place-items:center; margin-right:14px;
@@ -43,7 +43,7 @@ a { color:var(--orange); text-decoration:underline; }
 }
 
 .donut-split {
-  --pos: 69;
+  --pos: 60;
   width:140px; height:140px; border-radius:50%;
   background:conic-gradient(var(--orange) calc(var(--pos)*1%), #444 0);
   display:inline-grid; place-items:center; margin-right:14px;
@@ -81,17 +81,17 @@ a { color:var(--orange); text-decoration:underline; }
 
   <table>
     <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
-    <tr><td>Mentions (last 14 days)</td><td>13</td><td>Activity level on Reddit</td></tr>
-    <tr><td>Average Sentiment</td><td>0.136 → Neutral</td><td>Crowd tone (Bullish/Neutral/Bearish)</td></tr>
-    <tr><td>Sentiment Std Dev</td><td>0.337</td><td>Dispersion of opinions (lower is better)</td></tr>
-    <tr><td>Sentiment Confidence</td><td>66%</td><td>Agreement level among posts</td></tr>
+    <tr><td>Mentions (last 14 days)</td><td>10</td><td>Activity level on Reddit</td></tr>
+    <tr><td>Average Sentiment</td><td>0.243 → Neutral</td><td>Crowd tone (Bullish/Neutral/Bearish)</td></tr>
+    <tr><td>Sentiment Std Dev</td><td>0.314</td><td>Dispersion of opinions (lower is better)</td></tr>
+    <tr><td>Sentiment Confidence</td><td>69%</td><td>Agreement level among posts</td></tr>
     <tr><td>Sentiment Momentum</td><td>33.3%</td><td>Week-over-week sentiment change (proxy)</td></tr>
     <tr><td>Buzz Ratio</td><td>1.25×</td><td>Mentions vs last week (proxy)</td></tr>
-    <tr><td>Reliability Weight</td><td>0.71</td><td>Subreddit quality (investing > hype)</td></tr>
-    <tr><td>DD Quality Ratio</td><td>69%</td><td>Posts with "DD", "earnings", etc.</td></tr>
-    <tr><td>Weighted Sentiment Bias</td><td>0.10</td><td>Tone × credibility (positive = quality bullish)</td></tr>
-    <tr><td>Reliability Index</td><td><span class="badge" style="background:#FFA50022; border-color:#FFA500; color:#FFA500">67.8/100</span></td><td>Composite confidence in Reddit signal</td></tr>
-    <tr><td>Composite Reddit Score</td><td style='color:#FFA500'><b>52.6/100</b></td><td>Investo composite Reddit signal</td></tr>
+    <tr><td>Reliability Weight</td><td>0.74</td><td>Subreddit quality (investing > hype)</td></tr>
+    <tr><td>DD Quality Ratio</td><td>60%</td><td>Posts with "DD", "earnings", etc.</td></tr>
+    <tr><td>Weighted Sentiment Bias</td><td>0.18</td><td>Tone × credibility (positive = quality bullish)</td></tr>
+    <tr><td>Reliability Index</td><td><span class="badge" style="background:#FFA50022; border-color:#FFA500; color:#FFA500">64.3/100</span></td><td>Composite confidence in Reddit signal</td></tr>
+    <tr><td>Composite Reddit Score</td><td style='color:#FFA500'><b>54.0/100</b></td><td>Investo composite Reddit signal</td></tr>
   </table>
 
   <!-- Visual Grid -->
@@ -99,7 +99,7 @@ a { color:var(--orange); text-decoration:underline; }
     <div class="card">
       <h3>Sentiment Confidence</h3>
       <div class="donut"></div>
-      <div class="donut-label">66%</div>
+      <div class="donut-label">69%</div>
       <div class="small">Lower std dev ⇒ higher confidence.</div>
     </div>
 
@@ -118,14 +118,14 @@ a { color:var(--orange); text-decoration:underline; }
     <div class="card">
       <h3>Analytical vs Emotional</h3>
       <div class="donut-split"></div>
-      <div class="donut-label">69%</div>
-      <div class="small">Analytical posts (DD/earnings). Remainder 31% ≈ emotional/meme.</div>
+      <div class="donut-label">60%</div>
+      <div class="small">Analytical posts (DD/earnings). Remainder 40% ≈ emotional/meme.</div>
     </div>
 
     <div class="card">
       <h3>Subreddit Weights</h3>
       <ul class="weight-list">
-        <li>investing: <span class='badge'>1.00</span><span class='weight-bar'><span class='fill' style='width:100%;'></span></span> <span class='small'>(0 mentions)</span></li><li>stocks: <span class='badge'>0.90</span><span class='weight-bar'><span class='fill' style='width:90%;'></span></span> <span class='small'>(7 mentions)</span></li><li>StockMarket: <span class='badge'>0.80</span><span class='weight-bar'><span class='fill' style='width:80%;'></span></span> <span class='small'>(0 mentions)</span></li><li>wallstreetbets: <span class='badge'>0.50</span><span class='weight-bar'><span class='fill' style='width:50%;'></span></span> <span class='small'>(6 mentions)</span></li>
+        <li>investing: <span class='badge'>1.00</span><span class='weight-bar'><span class='fill' style='width:100%;'></span></span> <span class='small'>(0 mentions)</span></li><li>stocks: <span class='badge'>0.90</span><span class='weight-bar'><span class='fill' style='width:90%;'></span></span> <span class='small'>(6 mentions)</span></li><li>StockMarket: <span class='badge'>0.80</span><span class='weight-bar'><span class='fill' style='width:80%;'></span></span> <span class='small'>(0 mentions)</span></li><li>wallstreetbets: <span class='badge'>0.50</span><span class='weight-bar'><span class='fill' style='width:50%;'></span></span> <span class='small'>(4 mentions)</span></li>
       </ul>
       <div class="small" style="margin-top:6px;">Higher weight = more credible source impact.</div>
     </div>
@@ -136,13 +136,13 @@ a { color:var(--orange); text-decoration:underline; }
     <ul>
       <li>Sentiment trend: rising</li>
       <li>Buzz level: stable</li>
-      <li>Discussion quality: 69% analytical posts</li>
-      <li>Reliability: 72% subreddit credibility factor</li>
+      <li>Discussion quality: 60% analytical posts</li>
+      <li>Reliability: 74% subreddit credibility factor</li>
     </ul>
   </div>
 
   <h2 style='color:var(--orange);margin-top:22px;'>Top Reddit Posts</h2>
-  <ul><li>[POST] <a href='https://www.reddit.com/r/stocks/comments/1ny7ylt/ford_ceo_says_buyers_wont_pay_75k_for_evs_targets/'>Ford CEO says buyers won’t pay $75k for EVs, targets $30k models to rival BYD and move out of Tesla’s shadow</a> — stocks (2511↑, Sent 0.26)</li><li>[QUALITY] <a href='https://www.reddit.com/r/wallstreetbets/comments/1nx0zem/im_having_best_day_of_my_life/'>Im having best day of my life!</a> — wallstreetbets (1513↑, Sent 0.48)</li><li>[QUALITY] <a href='https://www.reddit.com/r/stocks/comments/1nxb69y/netflix_falls_5_for_worst_week_since_april_as/'>Netflix falls 5% for worst week since April as Musk urges boycott ahead of Q3 earnings</a> — stocks (664↑, Sent -0.75)</li></ul>
+  <ul><li>[POST] <a href='https://www.reddit.com/r/stocks/comments/1ny7ylt/ford_ceo_says_buyers_wont_pay_75k_for_evs_targets/'>Ford CEO says buyers won’t pay $75k for EVs, targets $30k models to rival BYD and move out of Tesla’s shadow</a> — stocks (2509↑, Sent 0.26)</li><li>[POST] <a href='https://www.reddit.com/r/stocks/comments/1o7sm6o/congratulations_we_have_reached_the_mania_stage/'>Congratulations! We have reached the Mania stage in this bull market. 5x leveraged ETF’s are coming</a> — stocks (1022↑, Sent 0.65)</li><li>[POST] <a href='https://www.reddit.com/r/stocks/comments/1o15sk2/saw_this_goldman_report_comparing_todays_market/'>Saw this Goldman report comparing today’s market to past bubbles</a> — stocks (480↑, Sent 0.33)</li></ul>
 
   <p class="small" style='margin-top:1.2em;'>Generated automatically by Investo Reddit Sentiment Analyzer.</p>
 </div>

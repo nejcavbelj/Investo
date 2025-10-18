@@ -1,8 +1,3 @@
-# Environment variables
-.env
-.env.local
-.env.production
-
 # Python
 __pycache__/
 *.py[cod]
@@ -33,6 +28,11 @@ ENV/
 env.bak/
 venv.bak/
 
+# Environment variables
+.env
+.env.local
+.env.production
+
 # IDE
 .vscode/
 .idea/
@@ -50,26 +50,24 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-*.log
 logs/
-*.log.*
+*.log
 
 # Cache
 cache/
-.cache/
-
-# Reports (keep templates but ignore generated reports)
-reports/generated/*.html
-reports/generated/*.pdf
-
-# Token data
 token_data.json
-investment_news_bot/
+
+# Reports
+reports/generated/
+*.pdf
+*.html
 
 # Test coverage
 .coverage
 htmlcov/
 .pytest_cache/
 
-# Railway
-.railway/
+# Temporary files
+tmp/
+temp/
+*.tmp
