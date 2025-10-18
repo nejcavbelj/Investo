@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Investo Combined Analysis Report - {{symbol}}</title>
+    <style>
+        :root {
+            --orange: #FFA500; --bg: #181818; --panel: #222; --ink: #fff; --muted: #aaa; --line: #333;
+            --green: #00FF00; --amber: #FFC107; --red: #FF3C00; --blue: #6ad1ff; --pink: #FF6B6B;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--ink); margin: 0;
+        }
+        .container {
+            max-width: 1100px; margin: 40px auto; background: var(--panel); padding: 2em; border-radius: 10px; box-shadow: 0 3px 24px #111;
+        }
+        h1 { text-align: center; color: var(--orange); letter-spacing: 2px; margin-top: 0; }
+        h2 { color: var(--orange); border-bottom: 2px solid var(--line); padding-bottom: 0.5em; margin-top: 2em; }
+        
+        .company-info {
+            background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 1em 0;
+        }
+        .company-info p { margin: 0.5em 0; font-size: 1.1em; }
+        .company-info strong { color: var(--blue); }
+        
+        .analysis-section {
+            background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 2em 0;
+        }
+        .analysis-section h2 { margin-top: 0; }
+        .graham-section h2 { color: var(--blue); }
+        .lynch-section h2 { color: var(--orange); }
+        .reddit-section h2 { color: var(--pink); }
+        
+        table { margin: 1em 0; width: 100%; border-collapse: collapse; background: #181818; }
+        th, td { padding: 0.7em 1em; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+        th { background: #202020; color: var(--orange); }
+        a { color: var(--orange); text-decoration: underline; }
+        
+        .grid {
+            display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 18px; margin-top: 22px;
+        }
+        .card {
+            background: #1b1b1b; border: 1px solid #242424; border-radius: 10px; padding: 16px;
+        }
+        .card h3 { margin: 0 0 8px 0; color: var(--orange); font-weight: 600; }
+        
+        .donut {
+            width: 140px; height: 140px; border-radius: 50%; display: inline-grid; place-items: center; margin-right: 14px;
+        }
+        .donut::after {
+            content: ""; width: 88px; height: 88px; background: #1b1b1b; border-radius: 50%;
+        }
+        .donut-label {
+            position: relative; top: -98px; text-align: center; font-weight: 700;
+        }
+        
+        .meter {
+            position: relative; height: 16px; width: 100%; border-radius: 999px; background:
+                linear-gradient(90deg, var(--red) 0 16.6%, var(--amber) 16.6% 66.6%, var(--green) 66.6% 100%);
+            border: 1px solid #2a2a2a; margin-top: 8px;
+        }
+        .meter .marker {
+            position: absolute; top: -6px; width: 2px; height: 28px; background: #fff;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+        }
+        
+        .badge {
+            display: inline-block; padding: .25em .6em; border-radius: 999px; border: 1px solid #2a2a2a; font-weight: 600;
+        }
+        .small { color: var(--muted); font-size: .92em; }
+        
+        .sentiment-indicator {
+            display: inline-block; padding: 0.3em 0.8em; border-radius: 20px; font-weight: bold; font-size: 0.9em;
+        }
+        .sentiment-bullish { background-color: #00FF0022; color: #00FF00; border: 1px solid #00FF00; }
+        .sentiment-bearish { background-color: #FF3C0022; color: #FF3C00; border: 1px solid #FF3C00; }
+        .sentiment-neutral { background-color: #FFA50022; color: #FFA500; border: 1px solid #FFA500; }
+        
+        .verdict-box {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 2px solid var(--orange); border-radius: 12px; padding: 1.5em; margin: 2em 0; text-align: center;
+        }
+        .verdict-box h3 { color: var(--orange); font-size: 1.8em; margin: 0 0 0.5em 0; }
+        .verdict-summary { font-size: 1.2em; line-height: 1.6; margin: 1em 0; }
+        
+        .footer { text-align: center; margin-top: 3em; padding-top: 2em; border-top: 1px solid var(--line); color: var(--muted); }
+        
+        /* Dynamic styling for badges and elements */
+        .reliability-badge[data-index] {
+            background: #FF3C0022;
+            border-color: #FF3C00;
+            color: #FF3C00;
+        }
+        .reliability-badge[data-index="40"], .reliability-badge[data-index="41"], .reliability-badge[data-index="42"], 
+        .reliability-badge[data-index="43"], .reliability-badge[data-index="44"], .reliability-badge[data-index="45"], 
+        .reliability-badge[data-index="46"], .reliability-badge[data-index="47"], .reliability-badge[data-index="48"], 
+        .reliability-badge[data-index="49"], .reliability-badge[data-index="50"], .reliability-badge[data-index="51"], 
+        .reliability-badge[data-index="52"], .reliability-badge[data-index="53"], .reliability-badge[data-index="54"], 
+        .reliability-badge[data-index="55"], .reliability-badge[data-index="56"], .reliability-badge[data-index="57"], 
+        .reliability-badge[data-index="58"], .reliability-badge[data-index="59"], .reliability-badge[data-index="60"], 
+        .reliability-badge[data-index="61"], .reliability-badge[data-index="62"], .reliability-badge[data-index="63"], 
+        .reliability-badge[data-index="64"], .reliability-badge[data-index="65"], .reliability-badge[data-index="66"], 
+        .reliability-badge[data-index="67"], .reliability-badge[data-index="68"], .reliability-badge[data-index="69"] {
+            background: #FFA50022;
+            border-color: #FFA500;
+            color: #FFA500;
+        }
+        .reliability-badge[data-index="70"], .reliability-badge[data-index="71"], .reliability-badge[data-index="72"], 
+        .reliability-badge[data-index="73"], .reliability-badge[data-index="74"], .reliability-badge[data-index="75"], 
+        .reliability-badge[data-index="76"], .reliability-badge[data-index="77"], .reliability-badge[data-index="78"], 
+        .reliability-badge[data-index="79"], .reliability-badge[data-index="80"], .reliability-badge[data-index="81"], 
+        .reliability-badge[data-index="82"], .reliability-badge[data-index="83"], .reliability-badge[data-index="84"], 
+        .reliability-badge[data-index="85"], .reliability-badge[data-index="86"], .reliability-badge[data-index="87"], 
+        .reliability-badge[data-index="88"], .reliability-badge[data-index="89"], .reliability-badge[data-index="90"], 
+        .reliability-badge[data-index="91"], .reliability-badge[data-index="92"], .reliability-badge[data-index="93"], 
+        .reliability-badge[data-index="94"], .reliability-badge[data-index="95"], .reliability-badge[data-index="96"], 
+        .reliability-badge[data-index="97"], .reliability-badge[data-index="98"], .reliability-badge[data-index="99"], 
+        .reliability-badge[data-index="100"] {
+            background: #00FF0022;
+            border-color: #00FF00;
+            color: #00FF00;
+        }
+        
+        .reddit-score[data-verdict="Bullish"] { color: #00FF00; }
+        .reddit-score[data-verdict="Neutral"] { color: #FFA500; }
+        .reddit-score[data-verdict="Bearish"] { color: #FF3C00; }
+        
+        .verdict-donut[data-verdict="Bullish"] { background: conic-gradient(var(--green) 100%, #333 0%); }
+        .verdict-donut[data-verdict="Neutral"] { background: conic-gradient(var(--amber) 100%, #333 0%); }
+        .verdict-donut[data-verdict="Bearish"] { background: conic-gradient(var(--red) 100%, #333 0%); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Investo Combined Analysis Report: {{symbol}}</h1>
+        
+        <div class="company-info">
+            <h2>Company Information</h2>
+            <p><strong>Name:</strong> {{company_name}}</p>
+            <p><strong>Price:</strong> ${{price}}</p>
+            <p><strong>Sector:</strong> {{sector}}</p>
+            <p><strong>Industry:</strong> {{industry}}</p>
+            <p><strong>Market Cap:</strong> ${{market_cap}}</p>
+        </div>
+        
+        <!-- Graham Analysis Section -->
+        <div class="analysis-section graham-section">
+            <h2>📊 Benjamin Graham Analysis</h2>
+            
+            <table>
+                <tr><th>Metric</th><th>Value</th><th>Graham Criteria</th><th>Status</th></tr>
+                {% for metric, value in graham_metrics.items() %}
+                {% if metric not in ['sector', 'industry', 'price', 'marketCap', 'Graham_Combined_Test'] %}
+                <tr>
+                    <td>{{metric.replace('_', ' ')}}</td>
+                    <td>{{value if value is not none else 'N/A'}}</td>
+                    <td>{{get_graham_criteria(metric)}}</td>
+                    <td>
+                        {% if check_graham_criteria(metric, value) %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </table>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>Graham Combined Test</h3>
+                    {% if graham_metrics.Graham_Combined_Test %}
+                        <div class="donut" style="background: conic-gradient(var(--green) 100%, #333 0);"></div>
+                        <div class="donut-label">PASS</div>
+                        <div class="small">All Graham criteria met</div>
+                    {% else %}
+                        <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                        <div class="donut-label">FAIL</div>
+                        <div class="small">Some criteria not met</div>
+                    {% endif %}
+                </div>
+                
+                <div class="card">
+                    <h3>Margin of Safety</h3>
+                    {% if graham_metrics.get('Margin_of_Safety_%') %}
+                        {% set mos = graham_metrics.get('Margin_of_Safety_%') %}
+                        {% set mos_pct = (mos / 50 * 100) | round %}
+                        <div class="donut" style="background: conic-gradient(var(--green) {{mos_pct}}%, #333 0%);"></div>
+                        <div class="donut-label">{{mos|round(1)}}%</div>
+                        <div class="small">Higher is safer</div>
+                    {% else %}
+                        <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                        <div class="donut-label">N/A</div>
+                        <div class="small">Cannot calculate</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if graham_metrics.NetNet_Comment %}
+            <div class="card" style="margin-top: 1em;">
+                <h3>Net-Net Analysis</h3>
+                <p>{{graham_metrics.NetNet_Comment}}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Lynch Analysis Section -->
+        <div class="analysis-section lynch-section">
+            <h2>🚀 Peter Lynch Analysis</h2>
+            
+            <table>
+                <tr><th>Metric</th><th>Value</th><th>Lynch Criteria</th><th>Status</th></tr>
+                {% for metric, value in lynch_metrics.items() %}
+                {% if metric not in ['sector', 'industry'] %}
+                <tr>
+                    <td>{{metric.replace('_', ' ')}}</td>
+                    <td>{{value if value is not none else 'N/A'}}</td>
+                    <td>{{get_lynch_criteria(metric)}}</td>
+                    <td>
+                        {% if check_lynch_criteria(metric, value) %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </table>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>PEG Ratio Analysis</h3>
+                    {% set peg = lynch_metrics.PEG %}
+                    {% if peg %}
+                        {% if peg < 1.0 %}
+                            <div class="donut" style="background: conic-gradient(var(--green) 100%, #333 0);"></div>
+                            <div class="donut-label">EXCELLENT</div>
+                            <div class="small">PEG: {{peg|round(2)}} &lt; 1.0</div>
+                        {% elif peg < 1.5 %}
+                            <div class="donut" style="background: conic-gradient(var(--amber) 100%, #333 0);"></div>
+                            <div class="donut-label">GOOD</div>
+                            <div class="small">PEG: {{peg|round(2)}} &lt; 1.5</div>
+                        {% else %}
+                            <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                            <div class="donut-label">HIGH</div>
+                            <div class="small">PEG: {{peg|round(2)}} &gt; 1.5</div>
+                        {% endif %}
+                    {% else %}
+                        <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                        <div class="donut-label">N/A</div>
+                        <div class="small">Cannot calculate</div>
+                    {% endif %}
+                </div>
+                
+                <div class="card">
+                    <h3>Growth Analysis</h3>
+                    {% if lynch_metrics.get('EPS_Growth_%') %}
+                        {% set growth = lynch_metrics.get('EPS_Growth_%') %}
+                        {% set growth_pct = (growth / 20 * 100) | round %}
+                        <div class="donut" style="background: conic-gradient(var(--green) {{growth_pct}}%, #333 0%);"></div>
+                        <div class="donut-label">{{growth|round(1)}}%</div>
+                        <div class="small">EPS Growth Rate</div>
+                    {% else %}
+                        <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                        <div class="donut-label">N/A</div>
+                        <div class="small">No growth data</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reddit Analysis Section -->
+        <div class="analysis-section reddit-section">
+            <h2>💬 Reddit Sentiment Analysis</h2>
+            
+            <table>
+                <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
+                <tr><td>Mentions (last 14 days)</td><td>{{reddit_data.mentions}}</td><td>Activity level on Reddit</td></tr>
+                <tr><td>Average Sentiment</td><td>{{reddit_data.avg_sentiment}} → {{reddit_data.verdict}}</td><td>Crowd tone (Bullish/Neutral/Bearish)</td></tr>
+                <tr><td>Sentiment Confidence</td><td>{{(reddit_data.sentiment_confidence * 100)|round|int}}%</td><td>Agreement level among posts</td></tr>
+                <tr><td>Buzz Ratio</td><td>{{reddit_data.buzz_ratio}}×</td><td>Mentions vs last week (proxy)</td></tr>
+                <tr><td>Reliability Index</td><td><span class="badge reliability-badge" data-index="{{reddit_data.reliability_index}}">{{reddit_data.reliability_index}}/100</span></td><td>Composite confidence in Reddit signal</td></tr>
+                <tr><td>Composite Reddit Score</td><td class="reddit-score" data-verdict="{{reddit_data.verdict}}"><b>{{reddit_data.reddit_score}}/100</b></td><td>Investo composite Reddit signal</td></tr>
+            </table>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>Sentiment Confidence</h3>
+                    {% set conf_pct = (reddit_data.sentiment_confidence * 100) | round | int %}
+                    <div class="donut" style="background: conic-gradient(var(--green) {{conf_pct}}%, #333 0%);"></div>
+                    <div class="donut-label">{{conf_pct}}%</div>
+                    <div class="small">Lower std dev → higher confidence</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Buzz Meter (0–3×)</h3>
+                    {% set buzz_pos = ((reddit_data.buzz_ratio / 3) * 100) | round %}
+                    <div class="meter">
+                        <div class="marker buzz-marker" data-position="{{buzz_pos}}" title="Buzz position"></div>
+                    </div>
+                    <div class="small" style="margin-top:6px;">
+                        <span style="color:var(--red)">Fading (&lt;0.5×)</span> ·
+                        <span style="color:var(--amber)">Healthy (0.5–2×)</span> ·
+                        <span style="color:var(--green)">Hype (&gt;2×)</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Analytical vs Emotional</h3>
+                    {% set dd_pct = (reddit_data.dd_quality_ratio * 100) | round | int %}
+                    <div class="donut" style="background: conic-gradient(var(--orange) {{dd_pct}}%, #444 0%);"></div>
+                    <div class="donut-label">{{dd_pct}}%</div>
+                    <div class="small">Analytical posts (DD/earnings)</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Overall Verdict</h3>
+                    <div class="donut verdict-donut" data-verdict="{{reddit_data.verdict}}"></div>
+                    <div class="donut-label">{{reddit_data.verdict}}</div>
+                    <div class="small">Score: {{reddit_data.reddit_score}}/100</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Combined Verdict -->
+        <div class="verdict-box">
+            <h3>🎯 Combined Investment Verdict</h3>
+            <div class="verdict-summary">
+                {{combined_verdict}}
+            </div>
+            
+            <div style="margin-top: 1.5em;">
+                <strong>Analysis Breakdown:</strong><br>
+                • Graham Analysis: {% if graham_metrics.Graham_Combined_Test %}<span class="sentiment-indicator sentiment-bullish">BULLISH</span>{% else %}<span class="sentiment-indicator sentiment-bearish">BEARISH</span>{% endif %}<br>
+                • Lynch Analysis: {% if lynch_metrics.PEG and lynch_metrics.PEG < 1.5 %}<span class="sentiment-indicator sentiment-bullish">BULLISH</span>{% else %}<span class="sentiment-indicator sentiment-neutral">NEUTRAL</span>{% endif %}<br>
+                • Reddit Sentiment: <span class="sentiment-indicator sentiment-{{reddit_data.verdict.lower()}}">{{reddit_data.verdict}}</span>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Generated by Investo - Combined Analysis System</p>
+            <p>Report generated on {{generation_date}}</p>
+        </div>
+    </div>
+    
+    <script>
+        // Set buzz marker position dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            const buzzMarker = document.querySelector('.buzz-marker');
+            if (buzzMarker) {
+                const position = buzzMarker.getAttribute('data-position');
+                if (position) {
+                    buzzMarker.style.left = position + '%';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
