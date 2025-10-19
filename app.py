@@ -13,20 +13,30 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import load_config, startup_warnings
-from core.finnhub_api import set_api_key
-from reports.combined_report_generator import create_combined_report
-
 app = Flask(__name__)
 
-# Load configuration
-config = load_config()
-set_api_key(config['FINNHUB_API_KEY'])
+# Try to load configuration, but don't fail if it's not available
+try:
+    from config import load_config, startup_warnings
+    from core.finnhub_api import set_api_key
+    from reports.combined_report_generator import create_combined_report
+    
+    config = load_config()
+    if config.get('FINNHUB_API_KEY'):
+        set_api_key(config['FINNHUB_API_KEY'])
+except Exception as e:
+    print(f"Warning: Could not load configuration: {e}")
+    config = {}
 
 @app.route('/')
 def index():
     """Welcome page matching the photo graphics"""
     return render_template('welcome.html')
+
+@app.route('/health')
+def health_check():
+    """Health check endpoint for Railway"""
+    return jsonify({'status': 'healthy', 'message': 'Investo web app is running'}), 200
 
 @app.route('/graham')
 def graham_analysis():
@@ -56,8 +66,21 @@ def analyze_stock():
         if len(symbol) > 10:
             return jsonify({'error': 'Ticker symbol seems too long. Please enter a valid ticker (e.g., TSLA, AAPL).'}), 400
         
-        # For now, return a simple success message
-        # The full analysis can be implemented later
+        # Try to run full analysis if available
+        try:
+            if 'create_combined_report' in globals():
+                report_path = create_combined_report(symbol)
+                if report_path:
+                    return jsonify({
+                        'success': True,
+                        'message': f'Analysis complete for {symbol}!',
+                        'symbol': symbol,
+                        'report_path': report_path
+                    })
+        except Exception as analysis_error:
+            print(f"Analysis failed: {analysis_error}")
+        
+        # Fallback to simple response
         return jsonify({
             'success': True,
             'message': f'Analysis request received for {symbol}!',
