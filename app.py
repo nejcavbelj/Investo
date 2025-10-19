@@ -16,22 +16,35 @@ sys.path.insert(0, str(PROJECT_ROOT))
 app = Flask(__name__)
 
 # Try to load configuration, but don't fail if it's not available
+config = {}
+create_combined_report = None
+
 try:
     from config import load_config, startup_warnings
-    from core.finnhub_api import set_api_key
-    from reports.combined_report_generator import create_combined_report
-    
     config = load_config()
+except Exception as e:
+    print(f"Warning: Could not load config: {e}")
+
+try:
+    from core.finnhub_api import set_api_key
     if config.get('FINNHUB_API_KEY'):
         set_api_key(config['FINNHUB_API_KEY'])
 except Exception as e:
-    print(f"Warning: Could not load configuration: {e}")
-    config = {}
+    print(f"Warning: Could not set API key: {e}")
+
+try:
+    from reports.combined_report_generator import create_combined_report
+except Exception as e:
+    print(f"Warning: Could not import report generator: {e}")
+    create_combined_report = None
 
 @app.route('/')
 def index():
     """Welcome page matching the photo graphics"""
-    return render_template('welcome.html')
+    try:
+        return render_template('welcome.html')
+    except Exception as e:
+        return f"Welcome to Investo! (Template error: {e})", 200
 
 @app.route('/health')
 def health_check():
@@ -41,17 +54,26 @@ def health_check():
 @app.route('/graham')
 def graham_analysis():
     """Benjamin Graham analysis page"""
-    return render_template('graham_analysis.html')
+    try:
+        return render_template('graham_analysis.html')
+    except Exception as e:
+        return f"Graham Analysis Page (Template error: {e})", 200
 
 @app.route('/lynch')
 def lynch_analysis():
     """Peter Lynch analysis page"""
-    return render_template('lynch_analysis.html')
+    try:
+        return render_template('lynch_analysis.html')
+    except Exception as e:
+        return f"Lynch Analysis Page (Template error: {e})", 200
 
 @app.route('/reddit')
 def reddit_analysis():
     """Reddit sentiment analysis page"""
-    return render_template('reddit_analysis.html')
+    try:
+        return render_template('reddit_analysis.html')
+    except Exception as e:
+        return f"Reddit Analysis Page (Template error: {e})", 200
 
 @app.route('/analyze', methods=['POST'])
 def analyze_stock():
@@ -68,7 +90,7 @@ def analyze_stock():
         
         # Try to run full analysis if available
         try:
-            if 'create_combined_report' in globals():
+            if create_combined_report is not None:
                 report_path = create_combined_report(symbol)
                 if report_path:
                     return jsonify({

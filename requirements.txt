@@ -1,26 +1,15 @@
-# Core dependencies
+# Essential dependencies for Railway deployment
 flask>=2.3.0
 gunicorn>=21.0.0
 python-dotenv>=1.0.0
-
-# Data analysis
-yfinance>=0.2.0
-pandas>=1.5.0
-numpy>=1.24.0
-
-# API and web requests
-requests>=2.28.0
-
-# AI and sentiment analysis
-openai>=1.0.0
-vaderSentiment>=3.3.2
-
-# Reddit integration
-praw>=7.7.0
-
-# Report generation
-reportlab>=4.0.0
 jinja2>=3.1.0
 
-# Utilities
-pathlib2>=2.3.0
+# Optional dependencies (will be installed if available)
+# yfinance>=0.2.0
+# pandas>=1.5.0
+# numpy>=1.24.0
+# requests>=2.28.0
+# openai>=1.0.0
+# vaderSentiment>=3.3.2
+# praw>=7.7.0
+# reportlab>=4.0.0
