@@ -60,7 +60,6 @@ token_data.json
 # Reports
 reports/generated/
 *.pdf
-*.html
 
 # Test coverage
 .coverage
