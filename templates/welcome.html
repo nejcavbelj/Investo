@@ -1,357 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investo - Smart Stock Analysis</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investo - Smart Stock Analysis</title>
+  <link rel="icon" href="/static/favicon.ico" /> <!-- Favicon only for browser tab -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+    body {
+      font-family: "Poppins", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
 
-        .header-tag {
-            background: #d2691e;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    /* Subtle ambient orange glow */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(204, 68, 0, 0.25), transparent 70%);
+      filter: blur(100px);
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+    }
 
-        .header-tag::before {
-            content: "📈";
-            font-size: 16px;
-        }
+    .container {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+    }
 
-        .title {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #ffa500;
-            text-align: center;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-        }
+    /* Animated fading Investo text */
+    h1 {
+      font-size: 4.5rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(180deg, #ff5c00 0%, #1a1a1a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 25px rgba(255, 92, 0, 0.25);
+      margin-bottom: 0.8rem;
+      animation: glowFade 6s ease-in-out infinite alternate;
+    }
 
-        .tagline {
-            font-size: 1.2rem;
-            color: #cccccc;
-            text-align: center;
-            margin-bottom: 60px;
-            max-width: 600px;
-            line-height: 1.6;
-        }
+    @keyframes glowFade {
+      0% {
+        text-shadow: 0 0 10px rgba(255, 92, 0, 0.15),
+                     0 0 20px rgba(255, 92, 0, 0.2);
+        opacity: 0.85;
+      }
+      100% {
+        text-shadow: 0 0 25px rgba(255, 92, 0, 0.45),
+                     0 0 60px rgba(255, 92, 0, 0.3);
+        opacity: 1;
+      }
+    }
 
-        .form-container {
-            background: #1a1a1a;
-            border: 1px solid #333333;
-            border-radius: 12px;
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
+    .tagline {
+      font-size: 0.95rem; /* ⬅️ Smaller font size */
+      color: #bbb;
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+      line-height: 1.5;
+    }
 
-        .form-label {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #ffffff;
-            margin-bottom: 15px;
-            display: block;
-        }
+    .card {
+      background: #0b0b0b;
+      border-radius: 12px;
+      border: 1px solid rgba(204, 68, 0, 0.3);
+      box-shadow: 0 0 50px rgba(204, 68, 0, 0.2);
+      padding: 2.5rem;
+      width: 420px;
+      margin: 0 auto;
+      text-align: left;
+      transition: all 0.3s ease;
+    }
 
-        .ticker-input {
-            width: 100%;
-            padding: 15px;
-            font-size: 1rem;
-            background: #0a0a0a;
-            border: 1px solid #333333;
-            border-radius: 8px;
-            color: #ffffff;
-            margin-bottom: 20px;
-            transition: border-color 0.3s ease;
-        }
+    .card:hover {
+      box-shadow: 0 0 70px rgba(204, 68, 0, 0.35);
+      transform: translateY(-3px);
+    }
 
-        .ticker-input:focus {
-            outline: none;
-            border-color: #ffa500;
-        }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
 
-        .ticker-input::placeholder {
-            color: #666666;
-        }
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #222;
+      background: #000;
+      color: #fff;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      transition: 0.3s ease;
+    }
 
-        .analyze-button {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            background: #ffa500;
-            color: #000000;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+    input:focus {
+      border-color: #ff5c00;
+      box-shadow: 0 0 10px rgba(204, 68, 0, 0.4);
+      outline: none;
+    }
 
-        .analyze-button:hover {
-            background: #ff8c00;
-            transform: translateY(-2px);
-        }
+    button {
+      width: 100%;
+      background: #ff5c00;
+      color: #000;
+      font-weight: 700;
+      padding: 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: 0 0 40px rgba(204, 68, 0, 0.4);
+      transition: all 0.3s ease;
+    }
 
-        .analyze-button:active {
-            transform: translateY(0);
-        }
+    button:hover {
+      transform: translateY(-2px);
+      background: #e04a00;
+      box-shadow: 0 0 60px rgba(255, 92, 0, 0.6);
+    }
 
-        .analyze-button:disabled {
-            background: #666666;
-            cursor: not-allowed;
-            transform: none;
-        }
+    button:disabled {
+      background: #444;
+      color: #222;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
 
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-            color: #ffa500;
-        }
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 1.2rem;
+      color: #ff5c00;
+    }
 
-        .loading.show {
-            display: block;
-        }
+    .loading.show {
+      display: block;
+    }
 
-        .spinner {
-            border: 3px solid #333333;
-            border-top: 3px solid #ffa500;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
+    .spinner {
+      border: 3px solid #333;
+      border-top: 3px solid #ff5c00;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-        .error-message {
-            background: #ff3c00;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-        }
+    footer {
+      margin-top: 60px;
+      color: #666;
+      font-size: 0.9rem;
+      text-align: center;
+    }
 
-        .error-message.show {
-            display: block;
-        }
-
-        .success-message {
-            background: #00ff00;
-            color: #000000;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        .report-link {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
-            background: #ffa500;
-            color: #000000;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
-
-        .report-link:hover {
-            background: #ff8c00;
-        }
-
-        @media (max-width: 768px) {
-            .title {
-                font-size: 2.5rem;
-            }
-            
-            .tagline {
-                font-size: 1rem;
-                margin-bottom: 40px;
-            }
-            
-            .form-container {
-                padding: 30px 20px;
-            }
-        }
-    </style>
+    @media (max-width: 600px) {
+      h1 { font-size: 2.8rem; }
+      .card { width: 90%; padding: 1.8rem; }
+      .tagline { font-size: 0.9rem; margin-bottom: 2rem; }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="header-tag">
-        Smart Stock Analysis
-    </div>
-    
-    <h1 class="title">Investo</h1>
-    
-    <!-- Navigation Links -->
-    <div style="text-align: center; margin-bottom: 20px;">
-        <a href="/graham" style="color: #6ad1ff; text-decoration: none; margin: 0 15px; font-weight: 600;">Graham Analysis</a>
-        <a href="/lynch" style="color: #ffa500; text-decoration: none; margin: 0 15px; font-weight: 600;">Lynch Analysis</a>
-        <a href="/reddit" style="color: #FF6B6B; text-decoration: none; margin: 0 15px; font-weight: 600;">Reddit Analysis</a>
-    </div>
-    
+  <div class="container">
+    <h1>Investo</h1>
+
     <p class="tagline">
-        Enter any stock ticker to receive an instant, comprehensive analysis powered by advanced algorithms.
+      Enter any stock ticker to receive an instant, comprehensive analysis powered by advanced algorithms.
     </p>
-    
-    <div class="form-container">
-        <label for="ticker" class="form-label">Stock Ticker Symbol</label>
-        <input 
-            type="text" 
-            id="ticker" 
-            class="ticker-input" 
-            placeholder="Enter ticker (e.g., TSLA, AAPL)"
-            maxlength="10"
-        >
-        <button id="analyzeBtn" class="analyze-button">Analyze Stock</button>
-        
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Analyzing stock data... This may take a few moments.</p>
-        </div>
-        
-        <div id="errorMessage" class="error-message"></div>
-        <div id="successMessage" class="success-message"></div>
+
+    <div class="card">
+      <label for="ticker">Stock Ticker Symbol</label>
+      <input type="text" id="ticker" placeholder="Enter ticker (e.g., TSLA, AAPL)" maxlength="10" />
+      <button id="analyzeBtn">Analyze Stock</button>
+
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Analyzing stock data... Please wait.</p>
+      </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tickerInput = document.getElementById('ticker');
-            const analyzeBtn = document.getElementById('analyzeBtn');
-            const loading = document.getElementById('loading');
-            const errorMessage = document.getElementById('errorMessage');
-            const successMessage = document.getElementById('successMessage');
+    <footer>© 2025 Investo • Powered by Smart Analysis Engine</footer>
+  </div>
 
-            // Handle Enter key press
-            tickerInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    analyzeStock();
-                }
-            });
+  <script>
+    const tickerInput = document.getElementById("ticker");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const loading = document.getElementById("loading");
 
-            // Handle analyze button click
-            analyzeBtn.addEventListener('click', analyzeStock);
+    analyzeBtn.addEventListener("click", analyzeStock);
+    tickerInput.addEventListener("keypress", e => {
+      if (e.key === "Enter") analyzeStock();
+    });
 
-            function analyzeStock() {
-                const symbol = tickerInput.value.trim().toUpperCase();
-                
-                if (!symbol) {
-                    showError('Please enter a valid ticker symbol.');
-                    return;
-                }
+    function analyzeStock() {
+      const symbol = tickerInput.value.trim().toUpperCase();
+      if (!symbol) return alert("Please enter a valid ticker symbol.");
 
-                if (symbol.length > 10) {
-                    showError('Ticker symbol seems too long. Please enter a valid ticker (e.g., TSLA, AAPL).');
-                    return;
-                }
+      analyzeBtn.disabled = true;
+      loading.classList.add("show");
 
-                // Show loading state
-                setLoading(true);
-                hideMessages();
+      fetch("/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ symbol })
+      })
+      .then(res => res.json())
+      .then(data => {
+        analyzeBtn.disabled = false;
+        loading.classList.remove("show");
 
-                // Make API request
-                fetch('/analyze', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ symbol: symbol })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    setLoading(false);
-                    
-                    if (data.success) {
-                        showSuccess(data.message);
-                        // Open the report in a new tab
-                        const reportUrl = `/report/${data.report_path.split('/').pop()}`;
-                        const reportLink = document.createElement('a');
-                        reportLink.href = reportUrl;
-                        reportLink.target = '_blank';
-                        reportLink.textContent = 'View Full Report';
-                        reportLink.className = 'report-link';
-                        successMessage.appendChild(reportLink);
-                        
-                        // Clear the input for next analysis
-                        tickerInput.value = '';
-                    } else {
-                        showError(data.error || 'An error occurred while analyzing the stock.');
-                    }
-                })
-                .catch(error => {
-                    setLoading(false);
-                    showError('Network error. Please check your connection and try again.');
-                    console.error('Error:', error);
-                });
-            }
-
-            function setLoading(isLoading) {
-                analyzeBtn.disabled = isLoading;
-                loading.classList.toggle('show', isLoading);
-                
-                if (isLoading) {
-                    analyzeBtn.textContent = 'Analyzing...';
-                } else {
-                    analyzeBtn.textContent = 'Analyze Stock';
-                }
-            }
-
-            function showError(message) {
-                errorMessage.textContent = message;
-                errorMessage.classList.add('show');
-                successMessage.classList.remove('show');
-            }
-
-            function showSuccess(message) {
-                successMessage.textContent = message;
-                successMessage.classList.add('show');
-                errorMessage.classList.remove('show');
-            }
-
-            function hideMessages() {
-                errorMessage.classList.remove('show');
-                successMessage.classList.remove('show');
-                // Remove any existing report links
-                const existingLink = successMessage.querySelector('.report-link');
-                if (existingLink) {
-                    existingLink.remove();
-                }
-            }
-        });
-    </script>
+        if (data.success) {
+          const reportUrl = `/report/${data.report_path.split("/").pop()}`;
+          window.location.href = reportUrl;
+        } else {
+          alert(data.error || "Error analyzing stock.");
+        }
+      })
+      .catch(() => {
+        analyzeBtn.disabled = false;
+        loading.classList.remove("show");
+        alert("Network error. Please try again.");
+      });
+    }
+  </script>
 </body>
 </html>
