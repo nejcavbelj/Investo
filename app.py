@@ -41,17 +41,17 @@ def health_check():
 @app.route('/graham')
 def graham_analysis():
     """Benjamin Graham analysis page"""
-    return render_template('graham_simple.html')
+    return render_template('graham_analysis.html')
 
 @app.route('/lynch')
 def lynch_analysis():
     """Peter Lynch analysis page"""
-    return render_template('lynch_simple.html')
+    return render_template('lynch_analysis.html')
 
 @app.route('/reddit')
 def reddit_analysis():
     """Reddit sentiment analysis page"""
-    return render_template('reddit_simple.html')
+    return render_template('reddit_analysis.html')
 
 @app.route('/analyze', methods=['POST'])
 def analyze_stock():
