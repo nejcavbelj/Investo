@@ -8,13 +8,7 @@ from .helpers import (
     normalize_ticker,
     validate_ticker_list
 )
-from .budget import (
-    is_token_budget_low,
-    calculate_remaining_tokens,
-    calculate_remaining_percentage,
-    get_budget_status,
-    format_budget_info
-)
+# Budget module removed - not used by core application
 from .token_persistence import (
     load_token_data,
     save_token_data,
@@ -32,12 +26,7 @@ __all__ = [
     'normalize_ticker',
     'validate_ticker_list',
     
-    # Budget utilities
-    'is_token_budget_low',
-    'calculate_remaining_tokens',
-    'calculate_remaining_percentage',
-    'get_budget_status',
-    'format_budget_info',
+    # Budget utilities removed
     
     # Token persistence
     'load_token_data',

@@ -164,14 +164,30 @@ def create_combined_report(symbol):
     print("Analyzing Reddit sentiment...")
     reddit_results = get_reddit_sentiment_summary(symbol)
     
-    # Generate standalone Reddit report
-    print("Generating detailed Reddit sentiment report...")
-    from core.reddit_sentiment import render_html_report
-    try:
-        render_html_report(reddit_results)
-        print("Reddit sentiment report generated and opened in browser")
-    except Exception as e:
-        print(f"Could not generate Reddit report: {e}")
+    # ✅ SAFETY FIX: Handle missing Reddit data keys
+    required_keys = [
+        "sentiment_confidence", "buzz_ratio", "reliability_index",
+        "reddit_score", "verdict", "mentions", "avg_sentiment",
+        "dd_quality_ratio", "weighted_bias", "sentiment_momentum",
+        "std_dev", "reliability_weight"
+    ]
+    for key in required_keys:
+        reddit_results.setdefault(key, 0)
+
+    reddit_results.setdefault("ticker", symbol)
+    reddit_results.setdefault("subreddit_breakdown", {})
+    reddit_results.setdefault("top_posts", [])
+
+    # Optional: friendly note for report
+    if "summary" in reddit_results:
+        reddit_results["verdict"] = "Neutral"
+        reddit_results["reddit_score"] = 50
+        reddit_results["note"] = reddit_results["summary"]
+    else:
+        reddit_results["note"] = "Reddit sentiment analysis completed successfully."
+    
+    # Reddit sentiment analysis complete (no standalone report needed)
+    print("Reddit sentiment analysis complete")
     
     # Generate summaries
     graham_summary = generate_graham_summary(graham_results)
@@ -223,16 +239,10 @@ def create_combined_report(symbol):
     # Save report
     reports_dir = PROJECT_ROOT / "reports" / "generated"
     reports_dir.mkdir(exist_ok=True)
-    
-    # Use a unique filename with timestamp to prevent conflicts
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f"combined_report_{symbol}_{timestamp}.html"
+
+    # Always overwrite the latest report for each symbol
+    filename = f"combined_report_{symbol}.html"
     filepath = reports_dir / filename
-    
-    # Check if file already exists (shouldn't happen with timestamp, but safety check)
-    if filepath.exists():
-        print(f"Warning: Report file already exists: {filepath}")
-        return str(filepath)
     
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(html_content)

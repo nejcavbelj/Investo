@@ -13,7 +13,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
 # Try to load configuration, but don't fail if it's not available
 config = {}
