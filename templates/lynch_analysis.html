@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Investo - Peter Lynch Analysis</title>
+    {% include 'base_styles.html' %}
+</head>
+<body>
+    <div class="container">
+        <h1>Peter Lynch Analysis</h1>
+        
+        <!-- Navigation Links -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="/" style="color: #ffa500; text-decoration: none; margin: 0 15px; font-weight: 600;">Welcome</a>
+            <a href="/graham" style="color: #6ad1ff; text-decoration: none; margin: 0 15px; font-weight: 600;">Graham Analysis</a>
+            <a href="/reddit" style="color: #FF6B6B; text-decoration: none; margin: 0 15px; font-weight: 600;">Reddit Analysis</a>
+        </div>
+        
+        <div class="company-info">
+            <h2>Company Information</h2>
+            <p><strong>Name:</strong> {{company_name or 'Apple Inc.'}}</p>
+            <p><strong>Price:</strong> ${{price or '150.00'}}</p>
+            <p><strong>Sector:</strong> {{sector or 'Technology'}}</p>
+            <p><strong>Industry:</strong> {{industry or 'Consumer Electronics'}}</p>
+            <p><strong>Market Cap:</strong> ${{market_cap or '2.5T'}}</p>
+        </div>
+        
+        <!-- Lynch Analysis Section -->
+        <div class="analysis-section lynch-section">
+            <h2>🚀 Peter Lynch Analysis</h2>
+            
+            <table>
+                <tr><th>Metric</th><th>Value</th><th>Lynch Criteria</th><th>Status</th></tr>
+                <tr>
+                    <td>P/E Ratio</td>
+                    <td>{{lynch_metrics.get('P/E', '25.5')}}</td>
+                    <td>Reasonable for growth rate</td>
+                    <td>
+                        <span class="sentiment-indicator sentiment-neutral">~</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>PEG Ratio</td>
+                    <td>{{lynch_metrics.get('PEG', '1.2')}}</td>
+                    <td>&lt; 1.0 (Excellent), &lt; 1.5 (Good)</td>
+                    <td>
+                        {% if lynch_metrics.get('PEG', 1.2) < 1.5 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>EPS Growth %</td>
+                    <td>{{lynch_metrics.get('EPS_Growth_%', '15.2')}}%</td>
+                    <td>&gt; 15% (Excellent), &gt; 10% (Good)</td>
+                    <td>
+                        {% if lynch_metrics.get('EPS_Growth_%', 15.2) > 15 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-neutral">~</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>ROE %</td>
+                    <td>{{lynch_metrics.get('ROE_%', '147.4')}}%</td>
+                    <td>&gt; 15% (Excellent), &gt; 10% (Good)</td>
+                    <td>
+                        {% if lynch_metrics.get('ROE_%', 147.4) > 15 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>ROA %</td>
+                    <td>{{lynch_metrics.get('ROA_%', '19.2')}}%</td>
+                    <td>&gt; 10% (Excellent), &gt; 5% (Good)</td>
+                    <td>
+                        {% if lynch_metrics.get('ROA_%', 19.2) > 10 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-neutral">~</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Profit Margin %</td>
+                    <td>{{lynch_metrics.get('Profit_Margin_%', '25.3')}}%</td>
+                    <td>&gt; 15% (Excellent), &gt; 10% (Good)</td>
+                    <td>
+                        {% if lynch_metrics.get('Profit_Margin_%', 25.3) > 15 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-neutral">~</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Price to Sales</td>
+                    <td>{{lynch_metrics.get('Price_to_Sales', '6.8')}}</td>
+                    <td>&lt; 1.0 (Excellent), &lt; 2.0 (Good)</td>
+                    <td>
+                        {% if lynch_metrics.get('Price_to_Sales', 6.8) < 2.0 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Free Cash Flow Yield %</td>
+                    <td>{{lynch_metrics.get('Free_Cash_Flow_Yield_%', '3.8')}}%</td>
+                    <td>&gt; 5% (Excellent), &gt; 3% (Good)</td>
+                    <td>
+                        {% if lynch_metrics.get('Free_Cash_Flow_Yield_%', 3.8) > 3 %}
+                            <span class="sentiment-indicator sentiment-neutral">~</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>PEG Ratio Analysis</h3>
+                    {% set peg = lynch_metrics.get('PEG', 1.2) %}
+                    {% if peg %}
+                        {% if peg < 1.0 %}
+                            <div class="donut" style="background: conic-gradient(var(--green) 100%, #333 0);"></div>
+                            <div class="donut-label">EXCELLENT</div>
+                            <div class="small">PEG: {{peg|round(2)}} &lt; 1.0</div>
+                        {% elif peg < 1.5 %}
+                            <div class="donut" style="background: conic-gradient(var(--amber) 100%, #333 0);"></div>
+                            <div class="donut-label">GOOD</div>
+                            <div class="small">PEG: {{peg|round(2)}} &lt; 1.5</div>
+                        {% else %}
+                            <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                            <div class="donut-label">HIGH</div>
+                            <div class="small">PEG: {{peg|round(2)}} &gt; 1.5</div>
+                        {% endif %}
+                    {% else %}
+                        <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                        <div class="donut-label">N/A</div>
+                        <div class="small">Cannot calculate</div>
+                    {% endif %}
+                </div>
+                
+                <div class="card">
+                    <h3>Growth Analysis</h3>
+                    {% if lynch_metrics.get('EPS_Growth_%') %}
+                        {% set growth = lynch_metrics.get('EPS_Growth_%') %}
+                        {% set growth_pct = (growth / 20 * 100) | round %}
+                        <div class="donut" style="background: conic-gradient(var(--green) {{growth_pct}}%, #333 0%);"></div>
+                        <div class="donut-label">{{growth|round(1)}}%</div>
+                        <div class="small">EPS Growth Rate</div>
+                    {% else %}
+                        <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                        <div class="donut-label">N/A</div>
+                        <div class="small">No growth data</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Generated by Investo - Peter Lynch Analysis</p>
+            <p>Report generated on {{generation_date or '2025-10-18'}}</p>
+        </div>
+    </div>
+</body>
+</html>

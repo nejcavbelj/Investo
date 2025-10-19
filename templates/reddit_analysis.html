@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Investo - Reddit Sentiment Analysis</title>
+    {% include 'base_styles.html' %}
+</head>
+<body>
+    <div class="container">
+        <h1>Reddit Sentiment Analysis</h1>
+        
+        <!-- Navigation Links -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="/" style="color: #ffa500; text-decoration: none; margin: 0 15px; font-weight: 600;">Welcome</a>
+            <a href="/graham" style="color: #6ad1ff; text-decoration: none; margin: 0 15px; font-weight: 600;">Graham Analysis</a>
+            <a href="/lynch" style="color: #ffa500; text-decoration: none; margin: 0 15px; font-weight: 600;">Lynch Analysis</a>
+        </div>
+        
+        <div class="company-info">
+            <h2>Company Information</h2>
+            <p><strong>Name:</strong> {{company_name or 'Apple Inc.'}}</p>
+            <p><strong>Price:</strong> ${{price or '150.00'}}</p>
+            <p><strong>Sector:</strong> {{sector or 'Technology'}}</p>
+            <p><strong>Industry:</strong> {{industry or 'Consumer Electronics'}}</p>
+            <p><strong>Market Cap:</strong> ${{market_cap or '2.5T'}}</p>
+        </div>
+        
+        <!-- Reddit Analysis Section -->
+        <div class="analysis-section reddit-section">
+            <h2>💬 Reddit Sentiment Analysis</h2>
+            
+            <table>
+                <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
+                <tr>
+                    <td>Mentions (last 14 days)</td>
+                    <td>{{reddit_data.get('mentions', '1,247')}}</td>
+                    <td>Activity level on Reddit</td>
+                </tr>
+                <tr>
+                    <td>Average Sentiment</td>
+                    <td>{{reddit_data.get('avg_sentiment', '0.15')}} → {{reddit_data.get('verdict', 'Bullish')}}</td>
+                    <td>Crowd tone (Bullish/Neutral/Bearish)</td>
+                </tr>
+                <tr>
+                    <td>Sentiment Confidence</td>
+                    <td>{{(reddit_data.get('sentiment_confidence', 0.75) * 100)|round|int}}%</td>
+                    <td>Agreement level among posts</td>
+                </tr>
+                <tr>
+                    <td>Buzz Ratio</td>
+                    <td>{{reddit_data.get('buzz_ratio', '1.8')}}×</td>
+                    <td>Mentions vs last week (proxy)</td>
+                </tr>
+                <tr>
+                    <td>Reliability Index</td>
+                    <td><span class="badge reliability-badge" data-index="{{reddit_data.get('reliability_index', 75)}}">{{reddit_data.get('reliability_index', 75)}}/100</span></td>
+                    <td>Composite confidence in Reddit signal</td>
+                </tr>
+                <tr>
+                    <td>Composite Reddit Score</td>
+                    <td class="reddit-score" data-verdict="{{reddit_data.get('verdict', 'Bullish')}}"><b>{{reddit_data.get('reddit_score', 78)}}/100</b></td>
+                    <td>Investo composite Reddit signal</td>
+                </tr>
+            </table>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>Sentiment Confidence</h3>
+                    {% set conf_pct = (reddit_data.get('sentiment_confidence', 0.75) * 100) | round | int %}
+                    <div class="donut" style="background: conic-gradient(var(--green) {{conf_pct}}%, #333 0%);"></div>
+                    <div class="donut-label">{{conf_pct}}%</div>
+                    <div class="small">Lower std dev → higher confidence</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Buzz Meter (0–3×)</h3>
+                    {% set buzz_pos = ((reddit_data.get('buzz_ratio', 1.8) / 3) * 100) | round %}
+                    <div class="meter">
+                        <div class="marker buzz-marker" data-position="{{buzz_pos}}" title="Buzz position"></div>
+                    </div>
+                    <div class="small" style="margin-top:6px;">
+                        <span style="color:var(--red)">Fading (&lt;0.5×)</span> ·
+                        <span style="color:var(--amber)">Healthy (0.5–2×)</span> ·
+                        <span style="color:var(--green)">Hype (&gt;2×)</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Analytical vs Emotional</h3>
+                    {% set dd_pct = (reddit_data.get('dd_quality_ratio', 0.65) * 100) | round | int %}
+                    <div class="donut" style="background: conic-gradient(var(--orange) {{dd_pct}}%, #444 0%);"></div>
+                    <div class="donut-label">{{dd_pct}}%</div>
+                    <div class="small">Analytical posts (DD/earnings)</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Overall Verdict</h3>
+                    <div class="donut verdict-donut" data-verdict="{{reddit_data.get('verdict', 'Bullish')}}"></div>
+                    <div class="donut-label">{{reddit_data.get('verdict', 'Bullish')}}</div>
+                    <div class="small">Score: {{reddit_data.get('reddit_score', 78)}}/100</div>
+                </div>
+            </div>
+            
+            <!-- Sample Reddit Posts Section -->
+            <div class="card" style="margin-top: 2em;">
+                <h3>Top Reddit Discussions</h3>
+                <div style="margin-top: 1em;">
+                    <div style="margin-bottom: 1em; padding: 1em; background: #1a1a1a; border-radius: 8px;">
+                        <strong>r/investing</strong> - "{{company_name or 'Apple'}} earnings analysis and future outlook"
+                        <br><small style="color: var(--muted);">Score: 85/100 | Sentiment: Bullish</small>
+                    </div>
+                    <div style="margin-bottom: 1em; padding: 1em; background: #1a1a1a; border-radius: 8px;">
+                        <strong>r/stocks</strong> - "Why I'm bullish on {{company_name or 'Apple'}} long-term"
+                        <br><small style="color: var(--muted);">Score: 72/100 | Sentiment: Bullish</small>
+                    </div>
+                    <div style="margin-bottom: 1em; padding: 1em; background: #1a1a1a; border-radius: 8px;">
+                        <strong>r/SecurityAnalysis</strong> - "Deep dive: {{company_name or 'Apple'}} financial metrics"
+                        <br><small style="color: var(--muted);">Score: 91/100 | Sentiment: Bullish</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Generated by Investo - Reddit Sentiment Analysis</p>
+            <p>Report generated on {{generation_date or '2025-10-18'}}</p>
+        </div>
+    </div>
+    
+    <script>
+        // Set buzz marker position dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            const buzzMarker = document.querySelector('.buzz-marker');
+            if (buzzMarker) {
+                const position = buzzMarker.getAttribute('data-position');
+                if (position) {
+                    buzzMarker.style.left = position + '%';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

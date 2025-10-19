@@ -1,0 +1,128 @@
+<!-- Base styles for all Investo templates -->
+<style>
+    :root {
+        --orange: #FFA500; --bg: #181818; --panel: #222; --ink: #fff; --muted: #aaa; --line: #333;
+        --green: #00FF00; --amber: #FFC107; --red: #FF3C00; --blue: #6ad1ff; --pink: #FF6B6B;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--ink); margin: 0;
+    }
+    .container {
+        max-width: 1100px; margin: 40px auto; background: var(--panel); padding: 2em; border-radius: 10px; box-shadow: 0 3px 24px #111;
+    }
+    h1 { text-align: center; color: var(--orange); letter-spacing: 2px; margin-top: 0; }
+    h2 { color: var(--orange); border-bottom: 2px solid var(--line); padding-bottom: 0.5em; margin-top: 2em; }
+    
+    .company-info {
+        background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 1em 0;
+    }
+    .company-info p { margin: 0.5em 0; font-size: 1.1em; }
+    .company-info strong { color: var(--blue); }
+    
+    .analysis-section {
+        background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 2em 0;
+    }
+    .analysis-section h2 { margin-top: 0; }
+    .graham-section h2 { color: var(--blue); }
+    .lynch-section h2 { color: var(--orange); }
+    .reddit-section h2 { color: var(--pink); }
+    
+    table { margin: 1em 0; width: 100%; border-collapse: collapse; background: #181818; }
+    th, td { padding: 0.7em 1em; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #202020; color: var(--orange); }
+    a { color: var(--orange); text-decoration: underline; }
+    
+    .grid {
+        display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 18px; margin-top: 22px;
+    }
+    .card {
+        background: #1b1b1b; border: 1px solid #242424; border-radius: 10px; padding: 16px;
+    }
+    .card h3 { margin: 0 0 8px 0; color: var(--orange); font-weight: 600; }
+    
+    .donut {
+        width: 140px; height: 140px; border-radius: 50%; display: inline-grid; place-items: center; margin-right: 14px;
+    }
+    .donut::after {
+        content: ""; width: 88px; height: 88px; background: #1b1b1b; border-radius: 50%;
+    }
+    .donut-label {
+        position: relative; top: -98px; text-align: center; font-weight: 700;
+    }
+    
+    .meter {
+        position: relative; height: 16px; width: 100%; border-radius: 999px; background:
+            linear-gradient(90deg, var(--red) 0 16.6%, var(--amber) 16.6% 66.6%, var(--green) 66.6% 100%);
+        border: 1px solid #2a2a2a; margin-top: 8px;
+    }
+    .meter .marker {
+        position: absolute; top: -6px; width: 2px; height: 28px; background: #fff;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+    }
+    
+    .badge {
+        display: inline-block; padding: .25em .6em; border-radius: 999px; border: 1px solid #2a2a2a; font-weight: 600;
+    }
+    .small { color: var(--muted); font-size: .92em; }
+    
+    .sentiment-indicator {
+        display: inline-block; padding: 0.3em 0.8em; border-radius: 20px; font-weight: bold; font-size: 0.9em;
+    }
+    .sentiment-bullish { background-color: #00FF0022; color: #00FF00; border: 1px solid #00FF00; }
+    .sentiment-bearish { background-color: #FF3C0022; color: #FF3C00; border: 1px solid #FF3C00; }
+    .sentiment-neutral { background-color: #FFA50022; color: #FFA500; border: 1px solid #FFA500; }
+    
+    .verdict-box {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+        border: 2px solid var(--orange); border-radius: 12px; padding: 1.5em; margin: 2em 0; text-align: center;
+    }
+    .verdict-box h3 { color: var(--orange); font-size: 1.8em; margin: 0 0 0.5em 0; }
+    .verdict-summary { font-size: 1.2em; line-height: 1.6; margin: 1em 0; }
+    
+    .footer { text-align: center; margin-top: 3em; padding-top: 2em; border-top: 1px solid var(--line); color: var(--muted); }
+    
+    /* Dynamic styling for badges and elements */
+    .reliability-badge[data-index] {
+        background: #FF3C0022;
+        border-color: #FF3C00;
+        color: #FF3C00;
+    }
+    .reliability-badge[data-index="40"], .reliability-badge[data-index="41"], .reliability-badge[data-index="42"], 
+    .reliability-badge[data-index="43"], .reliability-badge[data-index="44"], .reliability-badge[data-index="45"], 
+    .reliability-badge[data-index="46"], .reliability-badge[data-index="47"], .reliability-badge[data-index="48"], 
+    .reliability-badge[data-index="49"], .reliability-badge[data-index="50"], .reliability-badge[data-index="51"], 
+    .reliability-badge[data-index="52"], .reliability-badge[data-index="53"], .reliability-badge[data-index="54"], 
+    .reliability-badge[data-index="55"], .reliability-badge[data-index="56"], .reliability-badge[data-index="57"], 
+    .reliability-badge[data-index="58"], .reliability-badge[data-index="59"], .reliability-badge[data-index="60"], 
+    .reliability-badge[data-index="61"], .reliability-badge[data-index="62"], .reliability-badge[data-index="63"], 
+    .reliability-badge[data-index="64"], .reliability-badge[data-index="65"], .reliability-badge[data-index="66"], 
+    .reliability-badge[data-index="67"], .reliability-badge[data-index="68"], .reliability-badge[data-index="69"] {
+        background: #FFA50022;
+        border-color: #FFA500;
+        color: #FFA500;
+    }
+    .reliability-badge[data-index="70"], .reliability-badge[data-index="71"], .reliability-badge[data-index="72"], 
+    .reliability-badge[data-index="73"], .reliability-badge[data-index="74"], .reliability-badge[data-index="75"], 
+    .reliability-badge[data-index="76"], .reliability-badge[data-index="77"], .reliability-badge[data-index="78"], 
+    .reliability-badge[data-index="79"], .reliability-badge[data-index="80"], .reliability-badge[data-index="81"], 
+    .reliability-badge[data-index="82"], .reliability-badge[data-index="83"], .reliability-badge[data-index="84"], 
+    .reliability-badge[data-index="85"], .reliability-badge[data-index="86"], .reliability-badge[data-index="87"], 
+    .reliability-badge[data-index="88"], .reliability-badge[data-index="89"], .reliability-badge[data-index="90"], 
+    .reliability-badge[data-index="91"], .reliability-badge[data-index="92"], .reliability-badge[data-index="93"], 
+    .reliability-badge[data-index="94"], .reliability-badge[data-index="95"], .reliability-badge[data-index="96"], 
+    .reliability-badge[data-index="97"], .reliability-badge[data-index="98"], .reliability-badge[data-index="99"], 
+    .reliability-badge[data-index="100"] {
+        background: #00FF0022;
+        border-color: #00FF00;
+        color: #00FF00;
+    }
+    
+    .reddit-score[data-verdict="Bullish"] { color: #00FF00; }
+    .reddit-score[data-verdict="Neutral"] { color: #FFA500; }
+    .reddit-score[data-verdict="Bearish"] { color: #FF3C00; }
+    
+    .verdict-donut[data-verdict="Bullish"] { background: conic-gradient(var(--green) 100%, #333 0%); }
+    .verdict-donut[data-verdict="Neutral"] { background: conic-gradient(var(--amber) 100%, #333 0%); }
+    .verdict-donut[data-verdict="Bearish"] { background: conic-gradient(var(--red) 100%, #333 0%); }
+</style>

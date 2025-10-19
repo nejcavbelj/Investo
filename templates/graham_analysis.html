@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Investo - Benjamin Graham Analysis</title>
+    <style>
+        :root {
+            --orange: #FFA500; --bg: #181818; --panel: #222; --ink: #fff; --muted: #aaa; --line: #333;
+            --green: #00FF00; --amber: #FFC107; --red: #FF3C00; --blue: #6ad1ff; --pink: #FF6B6B;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--ink); margin: 0;
+        }
+        .container {
+            max-width: 1100px; margin: 40px auto; background: var(--panel); padding: 2em; border-radius: 10px; box-shadow: 0 3px 24px #111;
+        }
+        h1 { text-align: center; color: var(--orange); letter-spacing: 2px; margin-top: 0; }
+        h2 { color: var(--orange); border-bottom: 2px solid var(--line); padding-bottom: 0.5em; margin-top: 2em; }
+        
+        .company-info {
+            background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 1em 0;
+        }
+        .company-info p { margin: 0.5em 0; font-size: 1.1em; }
+        .company-info strong { color: var(--blue); }
+        
+        .analysis-section {
+            background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 2em 0;
+        }
+        .analysis-section h2 { margin-top: 0; }
+        .graham-section h2 { color: var(--blue); }
+        
+        table { margin: 1em 0; width: 100%; border-collapse: collapse; background: #181818; }
+        th, td { padding: 0.7em 1em; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+        th { background: #202020; color: var(--orange); }
+        a { color: var(--orange); text-decoration: underline; }
+        
+        .grid {
+            display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 18px; margin-top: 22px;
+        }
+        .card {
+            background: #1b1b1b; border: 1px solid #242424; border-radius: 10px; padding: 16px;
+        }
+        .card h3 { margin: 0 0 8px 0; color: var(--orange); font-weight: 600; }
+        
+        .donut {
+            width: 140px; height: 140px; border-radius: 50%; display: inline-grid; place-items: center; margin-right: 14px;
+        }
+        .donut::after {
+            content: ""; width: 88px; height: 88px; background: #1b1b1b; border-radius: 50%;
+        }
+        .donut-label {
+            position: relative; top: -98px; text-align: center; font-weight: 700;
+        }
+        
+        .sentiment-indicator {
+            display: inline-block; padding: 0.3em 0.8em; border-radius: 20px; font-weight: bold; font-size: 0.9em;
+        }
+        .sentiment-bullish { background-color: #00FF0022; color: #00FF00; border: 1px solid #00FF00; }
+        .sentiment-bearish { background-color: #FF3C0022; color: #FF3C00; border: 1px solid #FF3C00; }
+        .sentiment-neutral { background-color: #FFA50022; color: #FFA500; border: 1px solid #FFA500; }
+        
+        .footer { text-align: center; margin-top: 3em; padding-top: 2em; border-top: 1px solid var(--line); color: var(--muted); }
+        .small { color: var(--muted); font-size: .92em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Benjamin Graham Analysis</h1>
+        
+        <!-- Navigation Links -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="/" style="color: #ffa500; text-decoration: none; margin: 0 15px; font-weight: 600;">Welcome</a>
+            <a href="/lynch" style="color: #ffa500; text-decoration: none; margin: 0 15px; font-weight: 600;">Lynch Analysis</a>
+            <a href="/reddit" style="color: #FF6B6B; text-decoration: none; margin: 0 15px; font-weight: 600;">Reddit Analysis</a>
+        </div>
+        
+        <div class="company-info">
+            <h2>Company Information</h2>
+            <p><strong>Name:</strong> {{company_name or 'Apple Inc.'}}</p>
+            <p><strong>Price:</strong> ${{price or '150.00'}}</p>
+            <p><strong>Sector:</strong> {{sector or 'Technology'}}</p>
+            <p><strong>Industry:</strong> {{industry or 'Consumer Electronics'}}</p>
+            <p><strong>Market Cap:</strong> ${{market_cap or '2.5T'}}</p>
+        </div>
+        
+        <!-- Graham Analysis Section -->
+        <div class="analysis-section graham-section">
+            <h2>📊 Benjamin Graham Analysis</h2>
+            
+            <table>
+                <tr><th>Metric</th><th>Value</th><th>Graham Criteria</th><th>Status</th></tr>
+                <tr>
+                    <td>P/E Ratio</td>
+                    <td>25.5</td>
+                    <td>&lt; 15 (Excellent), &lt; 20 (Good)</td>
+                    <td>
+                        <span class="sentiment-indicator sentiment-bearish">✗</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>P/B Ratio</td>
+                    <td>{{graham_metrics.get('P/B', '7.2')}}</td>
+                    <td>&lt; 1.5 (Excellent), &lt; 3 (Good)</td>
+                    <td>
+                        {% if graham_metrics.get('P/B', 7.2) < 3 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Debt to Equity</td>
+                    <td>{{graham_metrics.get('Debt_to_Equity', '1.7')}}</td>
+                    <td>&lt; 0.5 (Excellent), &lt; 1 (Good)</td>
+                    <td>
+                        {% if graham_metrics.get('Debt_to_Equity', 1.7) < 1 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Current Ratio</td>
+                    <td>{{graham_metrics.get('Current_Ratio', '1.1')}}</td>
+                    <td>&gt; 2 (Excellent), &gt; 1.5 (Good)</td>
+                    <td>
+                        {% if graham_metrics.get('Current_Ratio', 1.1) > 1.5 %}
+                            <span class="sentiment-indicator sentiment-bullish">✓</span>
+                        {% else %}
+                            <span class="sentiment-indicator sentiment-bearish">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Dividend Record</td>
+                    <td>{{graham_metrics.get('Dividend_Record', '10+ years')}}</td>
+                    <td>Consistent dividends for 20+ years</td>
+                    <td>
+                        <span class="sentiment-indicator sentiment-neutral">~</span>
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>Graham Combined Test</h3>
+                    {% if graham_metrics.get('Graham_Combined_Test', False) %}
+                        <div class="donut" style="background: conic-gradient(var(--green) 100%, #333 0);"></div>
+                        <div class="donut-label">PASS</div>
+                        <div class="small">All Graham criteria met</div>
+                    {% else %}
+                        <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                        <div class="donut-label">FAIL</div>
+                        <div class="small">Some criteria not met</div>
+                    {% endif %}
+                </div>
+                
+                <div class="card">
+                    <h3>Margin of Safety</h3>
+                    {% if graham_metrics.get('Margin_of_Safety_%') %}
+                        {% set mos = graham_metrics.get('Margin_of_Safety_%') %}
+                        {% set mos_pct = (mos / 50 * 100) | round %}
+                        <div class="donut" style="background: conic-gradient(var(--green) {{mos_pct}}%, #333 0%);"></div>
+                        <div class="donut-label">{{mos|round(1)}}%</div>
+                        <div class="small">Higher is safer</div>
+                    {% else %}
+                        <div class="donut" style="background: conic-gradient(var(--red) 100%, #333 0);"></div>
+                        <div class="donut-label">N/A</div>
+                        <div class="small">Cannot calculate</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if graham_metrics.get('NetNet_Comment') %}
+            <div class="card" style="margin-top: 1em;">
+                <h3>Net-Net Analysis</h3>
+                <p>{{graham_metrics.NetNet_Comment}}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>Generated by Investo - Benjamin Graham Analysis</p>
+            <p>Report generated on {{generation_date or '2025-10-18'}}</p>
+        </div>
+    </div>
+</body>
+</html>

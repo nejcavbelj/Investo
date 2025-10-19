@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investo - Smart Stock Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .header-tag {
+            background: #d2691e;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-tag::before {
+            content: "📈";
+            font-size: 16px;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffa500;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: #cccccc;
+            text-align: center;
+            margin-bottom: 60px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .form-container {
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-label {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .ticker-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            background: #0a0a0a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            color: #ffffff;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .ticker-input:focus {
+            outline: none;
+            border-color: #ffa500;
+        }
+
+        .ticker-input::placeholder {
+            color: #666666;
+        }
+
+        .analyze-button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: #ffa500;
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .analyze-button:hover {
+            background: #ff8c00;
+            transform: translateY(-2px);
+        }
+
+        .analyze-button:active {
+            transform: translateY(0);
+        }
+
+        .analyze-button:disabled {
+            background: #666666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #ffa500;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #333333;
+            border-top: 3px solid #ffa500;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #ff3c00;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #00ff00;
+            color: #000000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .report-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #ffa500;
+            color: #000000;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .report-link:hover {
+            background: #ff8c00;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .tagline {
+                font-size: 1rem;
+                margin-bottom: 40px;
+            }
+            
+            .form-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-tag">
+        Smart Stock Analysis
+    </div>
+    
+    <h1 class="title">Investo</h1>
+    
+    <!-- Navigation Links -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="/graham" style="color: #6ad1ff; text-decoration: none; margin: 0 15px; font-weight: 600;">Graham Analysis</a>
+        <a href="/lynch" style="color: #ffa500; text-decoration: none; margin: 0 15px; font-weight: 600;">Lynch Analysis</a>
+        <a href="/reddit" style="color: #FF6B6B; text-decoration: none; margin: 0 15px; font-weight: 600;">Reddit Analysis</a>
+    </div>
+    
+    <p class="tagline">
+        Enter any stock ticker to receive an instant, comprehensive analysis powered by advanced algorithms.
+    </p>
+    
+    <div class="form-container">
+        <label for="ticker" class="form-label">Stock Ticker Symbol</label>
+        <input 
+            type="text" 
+            id="ticker" 
+            class="ticker-input" 
+            placeholder="Enter ticker (e.g., TSLA, AAPL)"
+            maxlength="10"
+        >
+        <button id="analyzeBtn" class="analyze-button">Analyze Stock</button>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Analyzing stock data... This may take a few moments.</p>
+        </div>
+        
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tickerInput = document.getElementById('ticker');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            // Handle Enter key press
+            tickerInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    analyzeStock();
+                }
+            });
+
+            // Handle analyze button click
+            analyzeBtn.addEventListener('click', analyzeStock);
+
+            function analyzeStock() {
+                const symbol = tickerInput.value.trim().toUpperCase();
+                
+                if (!symbol) {
+                    showError('Please enter a valid ticker symbol.');
+                    return;
+                }
+
+                if (symbol.length > 10) {
+                    showError('Ticker symbol seems too long. Please enter a valid ticker (e.g., TSLA, AAPL).');
+                    return;
+                }
+
+                // Show loading state
+                setLoading(true);
+                hideMessages();
+
+                // Make API request
+                fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ symbol: symbol })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    setLoading(false);
+                    
+                    if (data.success) {
+                        showSuccess(data.message);
+                        // Open the report in a new tab
+                        const reportUrl = `/report/${data.report_path.split('/').pop()}`;
+                        const reportLink = document.createElement('a');
+                        reportLink.href = reportUrl;
+                        reportLink.target = '_blank';
+                        reportLink.textContent = 'View Full Report';
+                        reportLink.className = 'report-link';
+                        successMessage.appendChild(reportLink);
+                        
+                        // Clear the input for next analysis
+                        tickerInput.value = '';
+                    } else {
+                        showError(data.error || 'An error occurred while analyzing the stock.');
+                    }
+                })
+                .catch(error => {
+                    setLoading(false);
+                    showError('Network error. Please check your connection and try again.');
+                    console.error('Error:', error);
+                });
+            }
+
+            function setLoading(isLoading) {
+                analyzeBtn.disabled = isLoading;
+                loading.classList.toggle('show', isLoading);
+                
+                if (isLoading) {
+                    analyzeBtn.textContent = 'Analyzing...';
+                } else {
+                    analyzeBtn.textContent = 'Analyze Stock';
+                }
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.add('show');
+                successMessage.classList.remove('show');
+            }
+
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.classList.add('show');
+                errorMessage.classList.remove('show');
+            }
+
+            function hideMessages() {
+                errorMessage.classList.remove('show');
+                successMessage.classList.remove('show');
+                // Remove any existing report links
+                const existingLink = successMessage.querySelector('.report-link');
+                if (existingLink) {
+                    existingLink.remove();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
