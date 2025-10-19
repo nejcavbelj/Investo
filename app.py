@@ -42,9 +42,44 @@ except Exception as e:
 def index():
     """Welcome page matching the photo graphics"""
     try:
+        # Check if template exists
+        template_path = PROJECT_ROOT / "templates" / "welcome.html"
+        if not template_path.exists():
+            return f"Welcome to Investo! (Template file not found: {template_path})", 200
+        
         return render_template('welcome.html')
     except Exception as e:
-        return f"Welcome to Investo! (Template error: {e})", 200
+        # Return a simple HTML page instead of just text
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Investo - Smart Stock Analysis</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 50px; text-align: center; }}
+                h1 {{ color: #ffa500; font-size: 3rem; margin-bottom: 20px; }}
+                p {{ font-size: 1.2rem; margin-bottom: 10px; }}
+                .error {{ color: #ff6b6b; background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px; }}
+                a {{ color: #6ad1ff; text-decoration: none; margin: 0 15px; }}
+                a:hover {{ text-decoration: underline; }}
+            </style>
+        </head>
+        <body>
+            <h1>Investo</h1>
+            <p>Smart Stock Analysis Platform</p>
+            <div class="error">
+                <p>Template Error: {e}</p>
+                <p>But the app is working! You can still use the analysis features:</p>
+            </div>
+            <div>
+                <a href="/health">Health Check</a>
+                <a href="/graham">Graham Analysis</a>
+                <a href="/lynch">Lynch Analysis</a>
+                <a href="/reddit">Reddit Analysis</a>
+            </div>
+        </body>
+        </html>
+        """, 200
 
 @app.route('/health')
 def health_check():
@@ -57,7 +92,32 @@ def graham_analysis():
     try:
         return render_template('graham_analysis.html')
     except Exception as e:
-        return f"Graham Analysis Page (Template error: {e})", 200
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Graham Analysis - Investo</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 50px; text-align: center; }}
+                h1 {{ color: #6ad1ff; font-size: 2.5rem; margin-bottom: 20px; }}
+                .error {{ color: #ff6b6b; background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px; }}
+                a {{ color: #ffa500; text-decoration: none; margin: 0 15px; }}
+            </style>
+        </head>
+        <body>
+            <h1>Benjamin Graham Analysis</h1>
+            <div class="error">
+                <p>Template Error: {e}</p>
+                <p>Graham analysis feature coming soon!</p>
+            </div>
+            <div>
+                <a href="/">Home</a>
+                <a href="/lynch">Lynch Analysis</a>
+                <a href="/reddit">Reddit Analysis</a>
+            </div>
+        </body>
+        </html>
+        """, 200
 
 @app.route('/lynch')
 def lynch_analysis():
@@ -65,7 +125,32 @@ def lynch_analysis():
     try:
         return render_template('lynch_analysis.html')
     except Exception as e:
-        return f"Lynch Analysis Page (Template error: {e})", 200
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Lynch Analysis - Investo</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 50px; text-align: center; }}
+                h1 {{ color: #ffa500; font-size: 2.5rem; margin-bottom: 20px; }}
+                .error {{ color: #ff6b6b; background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px; }}
+                a {{ color: #6ad1ff; text-decoration: none; margin: 0 15px; }}
+            </style>
+        </head>
+        <body>
+            <h1>Peter Lynch Analysis</h1>
+            <div class="error">
+                <p>Template Error: {e}</p>
+                <p>Lynch analysis feature coming soon!</p>
+            </div>
+            <div>
+                <a href="/">Home</a>
+                <a href="/graham">Graham Analysis</a>
+                <a href="/reddit">Reddit Analysis</a>
+            </div>
+        </body>
+        </html>
+        """, 200
 
 @app.route('/reddit')
 def reddit_analysis():
@@ -73,7 +158,32 @@ def reddit_analysis():
     try:
         return render_template('reddit_analysis.html')
     except Exception as e:
-        return f"Reddit Analysis Page (Template error: {e})", 200
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Reddit Analysis - Investo</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 50px; text-align: center; }}
+                h1 {{ color: #FF6B6B; font-size: 2.5rem; margin-bottom: 20px; }}
+                .error {{ color: #ff6b6b; background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px; }}
+                a {{ color: #6ad1ff; text-decoration: none; margin: 0 15px; }}
+            </style>
+        </head>
+        <body>
+            <h1>Reddit Sentiment Analysis</h1>
+            <div class="error">
+                <p>Template Error: {e}</p>
+                <p>Reddit analysis feature coming soon!</p>
+            </div>
+            <div>
+                <a href="/">Home</a>
+                <a href="/graham">Graham Analysis</a>
+                <a href="/lynch">Lynch Analysis</a>
+            </div>
+        </body>
+        </html>
+        """, 200
 
 @app.route('/analyze', methods=['POST'])
 def analyze_stock():
