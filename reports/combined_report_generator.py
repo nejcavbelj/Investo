@@ -195,7 +195,7 @@ def create_combined_report(symbol):
     combined_verdict = generate_combined_verdict(graham_results, lynch_results, reddit_results)
     
     # Load template
-    template_path = PROJECT_ROOT / "reports" / "templates" / "combined_template.html"
+    template_path = PROJECT_ROOT / "templates" / "combined_template.html"
     with open(template_path, 'r', encoding='utf-8') as f:
         template_content = f.read()
     
