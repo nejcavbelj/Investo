@@ -213,46 +213,18 @@ def get_crowd_sentiment(symbol, max_items=MAX_SENTIMENT_ITEMS):
 def get_historical_data(symbol, period="1y"):
     """
     Get historical stock price data for charting.
-    
-    Args:
-        symbol (str): Stock symbol
-        period (str): Period for historical data ('1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max')
-    
-    Returns:
-        dict: Chart data with dates, prices, and volumes
+    This function is deprecated - use charts.chart_data.get_chart_data() instead.
     """
-    try:
-        ticker = yf.Ticker(symbol)
-        hist = ticker.history(period=period)
-        
-        if hist.empty:
-            return None
-            
-        # Convert to lists for Chart.js
-        dates = [date.strftime('%Y-%m-%d') for date in hist.index]
-        prices = [round(float(price), 2) for price in hist['Close']]
-        volumes = [int(volume) for volume in hist['Volume']]
-        highs = [round(float(high), 2) for high in hist['High']]
-        lows = [round(float(low), 2) for low in hist['Low']]
-        
-        return {
-            'dates': dates,
-            'prices': prices,
-            'volumes': volumes,
-            'highs': highs,
-            'lows': lows,
-            'period': period
-        }
-    except Exception as e:
-        print(f"Error fetching historical data for {symbol}: {e}")
-        return None
+    from charts.chart_data import get_chart_data
+    return get_chart_data(symbol, period)
 
 def get_stock_package(symbol):
     """Get complete stock data package including fundamentals, news, and sentiment"""
+    from charts.chart_data import get_chart_data
     d = get_full_stock_data(symbol)
     d["news"] = get_company_news(symbol)
     d["crowd"] = get_crowd_sentiment(symbol)
-    d["chart_data"] = get_historical_data(symbol, "1y")  # Default to 1 year
+    d["chart_data"] = get_chart_data(symbol, "1y")  # Default to 1 year
     return d
 
 def get_top_volume_tickers(n=10):

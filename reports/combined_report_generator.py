@@ -16,6 +16,7 @@ from core.graham_analysis import graham_metrics
 from core.lynch_analysis import lynch_metrics
 from core.reddit_sentiment import get_reddit_sentiment_summary
 from reports.report_builder import get_graham_interpretation, get_lynch_interpretation, generate_graham_summary, generate_lynch_summary
+from charts.chart_renderer import render_chart_html, get_chart_css
 
 def get_graham_criteria(metric):
     """Get Graham criteria for a metric"""
@@ -215,6 +216,10 @@ def create_combined_report(symbol):
     else:
         market_cap_str = "N/A"
     
+    # Generate chart HTML
+    chart_html = render_chart_html(stock_data.get('chart_data'), symbol)
+    chart_css = get_chart_css()
+    
     # Render HTML
     html_content = template.render(
         symbol=symbol,
@@ -229,7 +234,8 @@ def create_combined_report(symbol):
         graham_summary=graham_summary,
         lynch_summary=lynch_summary,
         combined_verdict=combined_verdict,
-        chart_data=stock_data.get('chart_data'),
+        chart_html=chart_html,
+        chart_css=chart_css,
         generation_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         get_graham_criteria=get_graham_criteria,
         get_lynch_criteria=get_lynch_criteria,
