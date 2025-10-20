@@ -4,17 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Investo - Smart Stock Analysis</title>
-  <link rel="icon" href="/static/favicon.ico" /> <!-- Favicon only for browser tab -->
+  <link rel="icon" href="/static/favicon.ico" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: "Poppins", "Segoe UI", sans-serif;
-      background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+      background: #000;
       color: #fff;
       min-height: 100vh;
       display: flex;
@@ -25,18 +21,11 @@
       overflow: hidden;
     }
 
-    /* Subtle ambient orange glow */
-    body::before {
-      content: "";
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(204, 68, 0, 0.25), transparent 70%);
-      filter: blur(100px);
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+    canvas {
+      position: fixed;
+      inset: 0;
       z-index: 0;
+      pointer-events: none;
     }
 
     .container {
@@ -45,7 +34,7 @@
       padding: 2rem;
     }
 
-    /* Animated fading Investo text */
+    /* Investo glowing gradient */
     h1 {
       font-size: 4.5rem;
       font-weight: 800;
@@ -54,53 +43,37 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-shadow: 0 0 25px rgba(255, 92, 0, 0.25);
-      margin-bottom: 0.8rem;
+      margin-bottom: 1rem;
       animation: glowFade 6s ease-in-out infinite alternate;
     }
 
     @keyframes glowFade {
-      0% {
-        text-shadow: 0 0 10px rgba(255, 92, 0, 0.15),
-                     0 0 20px rgba(255, 92, 0, 0.2);
-        opacity: 0.85;
-      }
-      100% {
-        text-shadow: 0 0 25px rgba(255, 92, 0, 0.45),
-                     0 0 60px rgba(255, 92, 0, 0.3);
-        opacity: 1;
-      }
+      0% { text-shadow: 0 0 10px rgba(255, 92, 0, 0.15); opacity: 0.85; }
+      100% { text-shadow: 0 0 25px rgba(255, 92, 0, 0.4); opacity: 1; }
     }
 
     .tagline {
-      font-size: 0.95rem; /* ⬅️ Smaller font size */
-      color: #bbb;
-      margin-bottom: 2.5rem;
+      font-size: 0.95rem;
+      color: #777;
+      margin-bottom: 2.2rem;
       max-width: 600px;
       line-height: 1.5;
     }
 
     .card {
-      background: #0b0b0b;
+      background: rgba(15, 15, 15, 0.9);
       border-radius: 12px;
       border: 1px solid rgba(204, 68, 0, 0.3);
-      box-shadow: 0 0 50px rgba(204, 68, 0, 0.2);
+      box-shadow: 0 0 40px rgba(204, 68, 0, 0.15);
       padding: 2.5rem;
       width: 420px;
       margin: 0 auto;
       text-align: left;
       transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
     }
 
-    .card:hover {
-      box-shadow: 0 0 70px rgba(204, 68, 0, 0.35);
-      transform: translateY(-3px);
-    }
-
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.6rem;
-    }
+    label { display: block; font-weight: 600; margin-bottom: 0.6rem; }
 
     input {
       width: 100%;
@@ -115,52 +88,49 @@
     }
 
     input:focus {
-      border-color: #ff5c00;
-      box-shadow: 0 0 10px rgba(204, 68, 0, 0.4);
+      border-color: #cc5500;
+      box-shadow: 0 0 10px rgba(200, 80, 0, 0.3);
       outline: none;
     }
 
+    input::placeholder {
+      color: #555;
+      font-size: 0.85rem;
+    }
+
+    /* ⬇️ Dimmed copper button */
     button {
       width: 100%;
-      background: #ff5c00;
+      background: linear-gradient(180deg, #cc5500 0%, #a54300 100%);
       color: #000;
       font-weight: 700;
       padding: 1rem;
       border: none;
       border-radius: 8px;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       cursor: pointer;
-      box-shadow: 0 0 40px rgba(204, 68, 0, 0.4);
+      box-shadow: 0 0 25px rgba(180, 80, 0, 0.25);
       transition: all 0.3s ease;
     }
 
     button:hover {
       transform: translateY(-2px);
-      background: #e04a00;
-      box-shadow: 0 0 60px rgba(255, 92, 0, 0.6);
-    }
-
-    button:disabled {
-      background: #444;
-      color: #222;
-      cursor: not-allowed;
-      box-shadow: none;
+      background: linear-gradient(180deg, #b94c00 0%, #8e3800 100%);
+      box-shadow: 0 0 35px rgba(200, 90, 0, 0.4);
     }
 
     .loading {
       display: none;
       text-align: center;
       margin-top: 1.2rem;
-      color: #ff5c00;
+      color: #cc5500;
     }
 
-    .loading.show {
-      display: block;
-    }
+    .loading.show { display: block; }
 
     .spinner {
       border: 3px solid #333;
-      border-top: 3px solid #ff5c00;
+      border-top: 3px solid #cc5500;
       border-radius: 50%;
       width: 28px;
       height: 28px;
@@ -189,9 +159,10 @@
 </head>
 
 <body>
+  <canvas id="neural-bg"></canvas>
+
   <div class="container">
     <h1>Investo</h1>
-
     <p class="tagline">
       Enter any stock ticker to receive an instant, comprehensive analysis powered by advanced algorithms.
     </p>
@@ -211,6 +182,86 @@
   </div>
 
   <script>
+    // ---------- NEURAL PARTICLE BACKGROUND ----------
+    const canvas = document.getElementById("neural-bg");
+    const ctx = canvas.getContext("2d");
+
+    let particles = [];
+    const particleCount = 130; // ⬆️ Increased for denser mesh
+    const connectionDistance = 160; // ⬇️ Closer connections
+    let time = 0;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.baseY = y;
+        this.vx = (Math.random() - 0.5) * 0.25;
+        this.vy = (Math.random() - 0.5) * 0.25;
+        this.radius = Math.random() * 2 + 1;
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+    }
+
+    function animate() {
+      ctx.fillStyle = "hsl(0, 0%, 4%)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      time += 0.005;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.y = p.baseY + Math.sin(time + p.x * 0.005) * 30;
+        p.x += p.vx;
+
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const other = particles[j];
+          const dx = p.x - other.x;
+          const dy = p.y - other.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < connectionDistance) {
+            const opacity = (1 - distance / connectionDistance) * 0.25;
+            ctx.strokeStyle = `hsla(25, 100%, 45%, ${opacity})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(other.x, other.y);
+            ctx.stroke();
+          }
+        }
+
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 3);
+        gradient.addColorStop(0, "hsla(25, 100%, 55%, 0.7)");
+        gradient.addColorStop(0.5, "hsla(25, 100%, 50%, 0.4)");
+        gradient.addColorStop(1, "hsla(25, 100%, 45%, 0)");
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "hsl(25, 100%, 45%)";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // ---------- INVESTO LOGIC ----------
     const tickerInput = document.getElementById("ticker");
     const analyzeBtn = document.getElementById("analyzeBtn");
     const loading = document.getElementById("loading");

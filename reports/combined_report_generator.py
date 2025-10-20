@@ -229,6 +229,7 @@ def create_combined_report(symbol):
         graham_summary=graham_summary,
         lynch_summary=lynch_summary,
         combined_verdict=combined_verdict,
+        chart_data=stock_data.get('chart_data'),
         generation_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         get_graham_criteria=get_graham_criteria,
         get_lynch_criteria=get_lynch_criteria,

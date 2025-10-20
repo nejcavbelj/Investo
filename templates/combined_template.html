@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Investo Combined Analysis Report - {{symbol}}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         :root {
             --orange: #FFA500; --bg: #181818; --panel: #222; --ink: #fff; --muted: #aaa; --line: #333;
@@ -129,6 +130,24 @@
         .verdict-donut[data-verdict="Bullish"] { background: conic-gradient(var(--green) 100%, #333 0%); }
         .verdict-donut[data-verdict="Neutral"] { background: conic-gradient(var(--amber) 100%, #333 0%); }
         .verdict-donut[data-verdict="Bearish"] { background: conic-gradient(var(--red) 100%, #333 0%); }
+        
+        /* Chart styling */
+        .chart-section {
+            background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 2em 0;
+        }
+        .chart-section h2 { margin-top: 0; color: var(--orange); }
+        .chart-container {
+            position: relative; height: 400px; width: 100%; margin: 1em 0; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; padding: 10px;
+        }
+        .chart-controls {
+            display: flex; gap: 10px; margin-bottom: 1em; flex-wrap: wrap;
+        }
+        .chart-controls button {
+            background: var(--panel); border: 1px solid var(--line); color: var(--ink); 
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+        }
+        .chart-controls button:hover { background: var(--orange); color: var(--bg); }
+        .chart-controls button.active { background: var(--orange); color: var(--bg); }
     </style>
 </head>
 <body>
@@ -144,9 +163,30 @@
             <p><strong>Market Cap:</strong> ${{market_cap}}</p>
         </div>
         
+        <!-- Stock Price Chart Section -->
+        {% if chart_data %}
+        <div class="chart-section">
+            <h2>Stock Price Chart</h2>
+            <div class="chart-controls">
+                <button onclick="updateChart('1mo')" class="period-btn" data-period="1mo">1 Month</button>
+                <button onclick="updateChart('3mo')" class="period-btn" data-period="3mo">3 Months</button>
+                <button onclick="updateChart('6mo')" class="period-btn" data-period="6mo">6 Months</button>
+                <button onclick="updateChart('1y')" class="period-btn active" data-period="1y">1 Year</button>
+                <button onclick="updateChart('2y')" class="period-btn" data-period="2y">2 Years</button>
+                <button onclick="updateChart('5y')" class="period-btn" data-period="5y">5 Years</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="stockChart"></canvas>
+                <div id="chart-error" style="display: none; color: #ff6b6b; text-align: center; padding: 20px;">
+                    Chart failed to load. Please refresh the page or check your internet connection.
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <!-- Graham Analysis Section -->
         <div class="analysis-section graham-section">
-            <h2>📊 Benjamin Graham Analysis</h2>
+            <h2>Benjamin Graham Analysis</h2>
             
             <table>
                 <tr><th>Metric</th><th>Value</th><th>Graham Criteria</th><th>Status</th></tr>
@@ -208,7 +248,7 @@
         
         <!-- Lynch Analysis Section -->
         <div class="analysis-section lynch-section">
-            <h2>🚀 Peter Lynch Analysis</h2>
+            <h2>Peter Lynch Analysis</h2>
             
             <table>
                 <tr><th>Metric</th><th>Value</th><th>Lynch Criteria</th><th>Status</th></tr>
@@ -274,7 +314,7 @@
         
         <!-- Reddit Analysis Section -->
         <div class="analysis-section reddit-section">
-            <h2>💬 Reddit Sentiment Analysis</h2>
+            <h2>Reddit Sentiment Analysis</h2>
             
             <table>
                 <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
@@ -347,6 +387,11 @@
     </div>
     
     <script>
+        // Chart data from server
+        const chartData = {{ chart_data | tojson if chart_data else 'null' }};
+        const symbol = '{{ symbol }}';
+        let stockChart = null;
+        
         // Set buzz marker position dynamically
         document.addEventListener('DOMContentLoaded', function() {
             const buzzMarker = document.querySelector('.buzz-marker');
@@ -356,7 +401,153 @@
                     buzzMarker.style.left = position + '%';
                 }
             }
+            
+            // Initialize chart if data is available
+            if (chartData) {
+                console.log('Chart data available, initializing chart...');
+                if (typeof Chart !== 'undefined') {
+                    console.log('Chart.js loaded successfully');
+                    initializeChart();
+                } else {
+                    console.error('Chart.js not loaded!');
+                    document.getElementById('chart-error').style.display = 'block';
+                }
+            } else {
+                console.log('No chart data available');
+            }
         });
+        
+        function initializeChart() {
+            try {
+                console.log('Initializing chart...');
+                const canvas = document.getElementById('stockChart');
+                if (!canvas) {
+                    console.error('Canvas element not found!');
+                    document.getElementById('chart-error').style.display = 'block';
+                    return;
+                }
+                console.log('Canvas found:', canvas);
+                
+                const ctx = canvas.getContext('2d');
+                console.log('Canvas context:', ctx);
+                
+                // Determine if price is going up or down for color
+                const firstPrice = chartData.prices[0];
+                const lastPrice = chartData.prices[chartData.prices.length - 1];
+                const isPositive = lastPrice >= firstPrice;
+                const lineColor = isPositive ? '#00FF00' : '#FF3C00';
+                const fillColor = isPositive ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 60, 0, 0.1)';
+                
+                console.log('Chart colors:', lineColor, fillColor);
+                
+                stockChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.dates,
+                    datasets: [{
+                        label: `${symbol} Price`,
+                        data: chartData.prices,
+                        borderColor: lineColor,
+                        backgroundColor: fillColor,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: lineColor,
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#fff',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#FFA500',
+                            bodyColor: '#fff',
+                            borderColor: '#FFA500',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${symbol}: $${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: '#333',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#aaa',
+                                maxTicksLimit: 8
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#333',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#aaa',
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+            
+            console.log('Chart created successfully:', stockChart);
+        } catch (error) {
+            console.error('Error creating chart:', error);
+            document.getElementById('chart-error').style.display = 'block';
+        }
+        
+        async function updateChart(period) {
+            // Update button states
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-period="${period}"]`).classList.add('active');
+            
+            try {
+                // Show loading state
+                const canvas = document.getElementById('stockChart');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#aaa';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Loading...', canvas.width / 2, canvas.height / 2);
+                
+                // Fetch new data (this would need to be implemented as an API endpoint)
+                // For now, we'll just show a message that this feature needs backend support
+                alert(`Chart period update to ${period} requires backend API implementation. Currently showing 1-year data.`);
+                
+            } catch (error) {
+                console.error('Error updating chart:', error);
+                alert('Error updating chart. Please refresh the page.');
+            }
+        }
     </script>
 </body>
 </html>
