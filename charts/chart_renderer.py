@@ -1,7 +1,7 @@
 """
 Chart Renderer Module
 ====================
-Handles rendering stock charts using Chart.js with proper HTML and JavaScript.
+Handles rendering stock charts using TradingView widget with Investo styling.
 """
 
 from typing import Dict, Optional
@@ -9,196 +9,117 @@ import json
 
 def render_chart_html(chart_data: Dict, symbol: str) -> str:
     """
-    Generate HTML and JavaScript for rendering a stock chart.
+    Generate HTML and JavaScript for rendering a TradingView stock chart.
     
     Args:
-        chart_data (dict): Chart data from get_chart_data()
+        chart_data (dict): Chart data from get_chart_data() (used for price info)
         symbol (str): Stock symbol
         
     Returns:
-        str: Complete HTML section for the chart
+        str: Complete HTML section for the TradingView chart
     """
     if not chart_data:
         return render_error_chart("No chart data available")
     
-    # Convert chart data to JSON for JavaScript
-    chart_data_json = json.dumps(chart_data, indent=2)
+    # Extract price information
+    current_price = chart_data.get('current_price', 'N/A')
+    price_change = chart_data.get('price_change', 0)
+    price_change_pct = chart_data.get('price_change_pct', 0)
+    period = chart_data.get('period', '1y')
+    
+    # Map period to TradingView range format
+    period_map = {
+        '1mo': '1M',
+        '3mo': '3M',
+        '6mo': '6M',
+        '1y': '12M',
+        '2y': '24M',
+        '5y': '60M',
+        'ytd': 'YTD',
+        'max': 'ALL'
+    }
+    tv_range = period_map.get(period, '12M')
     
     html = f"""
-    <!-- Stock Price Chart Section -->
+    <!-- Stock Price Chart Section - TradingView Widget -->
     <div class="chart-section">
         <h2>Stock Price Chart</h2>
         <div class="chart-info">
             <div class="price-info">
-                <span class="current-price">${chart_data.get('current_price', 'N/A')}</span>
-                <span class="price-change {'positive' if chart_data.get('price_change', 0) >= 0 else 'negative'}">
-                    {chart_data.get('price_change', 0):+.2f} ({chart_data.get('price_change_pct', 0):+.2f}%)
+                <span class="current-price">${current_price}</span>
+                <span class="price-change {'positive' if price_change >= 0 else 'negative'}">
+                    {price_change:+.2f} ({price_change_pct:+.2f}%)
                 </span>
             </div>
             <div class="period-info">
-                <span>Period: {chart_data.get('period', '1y')} | Data Points: {chart_data.get('data_points', 0)}</span>
+                <span class="chart-symbol">Symbol: {symbol}</span>
             </div>
         </div>
-        <div class="chart-controls">
-            <button onclick="updateChart('1mo')" class="period-btn" data-period="1mo">1 Month</button>
-            <button onclick="updateChart('3mo')" class="period-btn" data-period="3mo">3 Months</button>
-            <button onclick="updateChart('6mo')" class="period-btn" data-period="6mo">6 Months</button>
-            <button onclick="updateChart('1y')" class="period-btn active" data-period="1y">1 Year</button>
-            <button onclick="updateChart('2y')" class="period-btn" data-period="2y">2 Years</button>
-            <button onclick="updateChart('5y')" class="period-btn" data-period="5y">5 Years</button>
-        </div>
-        <div class="chart-container">
-            <canvas id="stockChart"></canvas>
-            <div id="chart-error" style="display: none; color: #ff6b6b; text-align: center; padding: 20px;">
-                Chart failed to load. Please refresh the page or check your internet connection.
+        
+        <!-- TradingView Widget Container -->
+        <div class="tradingview-widget-container">
+            <div id="tradingview_chart"></div>
+            <div id="chart-loading" class="chart-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading TradingView chart...</p>
             </div>
         </div>
     </div>
     
-    <script>
-        // Chart data from server
-        const chartData = {chart_data_json};
-        const symbol = '{symbol}';
-        let stockChart = null;
-        
-        // Initialize chart when DOM is ready
+    <!-- TradingView Widget Script -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript">
+        // Initialize TradingView widget when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {{
-            console.log('DOM loaded, initializing chart for', symbol);
+            console.log('Initializing TradingView chart for {symbol}');
             
-            if (chartData && typeof Chart !== 'undefined') {{
-                console.log('Chart data available, Chart.js loaded');
-                initializeChart();
-            }} else {{
-                console.error('Chart data or Chart.js not available');
-                if (!chartData) {{
-                    console.error('No chart data');
-                }}
-                if (typeof Chart === 'undefined') {{
-                    console.error('Chart.js not loaded');
-                }}
-                document.getElementById('chart-error').style.display = 'block';
-            }}
-        }});
-        
-        function initializeChart() {{
             try {{
-                console.log('Initializing chart for', symbol);
-                
-                const canvas = document.getElementById('stockChart');
-                if (!canvas) {{
-                    console.error('Canvas element not found!');
-                    document.getElementById('chart-error').style.display = 'block';
-                    return;
-                }}
-                
-                console.log('Canvas found, creating chart...');
-                const ctx = canvas.getContext('2d');
-                
-                // Determine chart colors based on performance
-                const firstPrice = chartData.prices[0];
-                const lastPrice = chartData.prices[chartData.prices.length - 1];
-                const isPositive = lastPrice >= firstPrice;
-                const lineColor = isPositive ? '#00FF00' : '#FF3C00';
-                const fillColor = isPositive ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 60, 0, 0.1)';
-                
-                console.log('Chart colors:', lineColor, fillColor);
-                
-                stockChart = new Chart(ctx, {{
-                    type: 'line',
-                    data: {{
-                        labels: chartData.dates,
-                        datasets: [{{
-                            label: `${{symbol}} Price`,
-                            data: chartData.prices,
-                            borderColor: lineColor,
-                            backgroundColor: fillColor,
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.1,
-                            pointRadius: 0,
-                            pointHoverRadius: 6,
-                            pointHoverBackgroundColor: lineColor,
-                            pointHoverBorderColor: '#fff',
-                            pointHoverBorderWidth: 2
-                        }}]
-                    }},
-                    options: {{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {{
-                            legend: {{
-                                display: true,
-                                labels: {{
-                                    color: '#fff',
-                                    font: {{
-                                        size: 14
-                                    }}
-                                }}
-                            }},
-                            tooltip: {{
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#FFA500',
-                                bodyColor: '#fff',
-                                borderColor: '#FFA500',
-                                borderWidth: 1,
-                                callbacks: {{
-                                    label: function(context) {{
-                                        return `${{symbol}}: ${{context.parsed.y.toFixed(2)}}`;
-                                    }}
-                                }}
-                            }}
-                        }},
-                        scales: {{
-                            x: {{
-                                grid: {{
-                                    color: '#333',
-                                    drawBorder: false
-                                }},
-                                ticks: {{
-                                    color: '#aaa',
-                                    maxTicksLimit: 8
-                                }}
-                            }},
-                            y: {{
-                                grid: {{
-                                    color: '#333',
-                                    drawBorder: false
-                                }},
-                                ticks: {{
-                                    color: '#aaa',
-                                    callback: function(value) {{
-                                        return '$' + value.toFixed(2);
-                                    }}
-                                }}
-                            }}
-                        }},
-                        interaction: {{
-                            intersect: false,
-                            mode: 'index'
-                        }}
+                // Hide loading spinner after a delay
+                setTimeout(function() {{
+                    const loading = document.getElementById('chart-loading');
+                    if (loading) {{
+                        loading.style.display = 'none';
                     }}
+                }}, 2000);
+                
+                // Initialize TradingView widget
+                new TradingView.widget({{
+                    "container_id": "tradingview_chart",
+                    "width": "100%",
+                    "height": 480,
+                    "symbol": "NASDAQ:{symbol}",
+                    "interval": "D",
+                    "timezone": "Etc/UTC",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "en",
+                    "toolbar_bg": "#181818",
+                    "enable_publishing": false,
+                    "range": "{tv_range}",
+                    "hide_top_toolbar": false,
+                    "hide_legend": false,
+                    "save_image": false,
+                    "backgroundColor": "#181818",
+                    "gridColor": "#333333",
+                    "hide_side_toolbar": false,
+                    "allow_symbol_change": true,
+                    "studies": [],
+                    "show_popup_button": false,
+                    "popup_width": "1000",
+                    "popup_height": "650",
+                    "support_host": "https://www.tradingview.com"
                 }});
                 
-                console.log('Chart created successfully:', stockChart);
+                console.log('TradingView widget initialized successfully');
                 
             }} catch (error) {{
-                console.error('Error creating chart:', error);
-                document.getElementById('chart-error').style.display = 'block';
+                console.error('Error initializing TradingView widget:', error);
+                const loading = document.getElementById('chart-loading');
+                if (loading) {{
+                    loading.innerHTML = '<p style="color: #ff6b6b;">Failed to load chart. Please refresh the page.</p>';
+                }}
             }}
-        }}
-        
-        async function updateChart(period) {{
-            console.log('Updating chart to period:', period);
-            
-            // Update button states
-            document.querySelectorAll('.period-btn').forEach(btn => {{
-                btn.classList.remove('active');
-            }});
-            document.querySelector(`[data-period="${{period}}"]`).classList.add('active');
-            
-            // For now, show a message that this requires backend implementation
-            alert(`Chart period update to ${{period}} requires backend API implementation. Currently showing ${{chartData.period}} data.`);
-        }}
+        }});
     </script>
     """
     
@@ -229,45 +150,122 @@ def render_error_chart(error_message: str = "Chart data unavailable") -> str:
 
 def get_chart_css() -> str:
     """
-    Get CSS styles for the chart.
+    Get CSS styles for the TradingView chart.
     
     Returns:
-        str: CSS styles for chart components
+        str: CSS styles for chart components with Investo styling
     """
     return """
-    /* Chart styling */
+    /* Chart styling - Investo Style */
     .chart-section {
-        background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 2em 0;
+        background: #1b1b1b; 
+        border: 2px solid #FFA500; 
+        border-radius: 12px; 
+        padding: 1.5em; 
+        margin: 2em 0;
+        box-shadow: 0 4px 16px rgba(255, 165, 0, 0.1);
     }
-    .chart-section h2 { margin-top: 0; color: var(--orange); }
+    .chart-section h2 { 
+        margin-top: 0; 
+        color: #FFA500; 
+        font-size: 1.8em;
+        margin-bottom: 1em;
+    }
     .chart-info {
-        display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em; flex-wrap: wrap;
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 1.5em; 
+        flex-wrap: wrap;
+        padding: 1em;
+        background: #0a0a0a;
+        border-radius: 8px;
+        border: 1px solid #333;
     }
     .price-info {
-        display: flex; align-items: center; gap: 10px;
+        display: flex; 
+        align-items: center; 
+        gap: 15px;
     }
     .current-price {
-        font-size: 1.5em; font-weight: bold; color: var(--orange);
+        font-size: 2em; 
+        font-weight: bold; 
+        color: #FFA500;
+        text-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
     }
     .price-change {
-        font-size: 1em; font-weight: bold;
+        font-size: 1.2em; 
+        font-weight: bold;
+        padding: 0.3em 0.8em;
+        border-radius: 6px;
     }
-    .price-change.positive { color: var(--green); }
-    .price-change.negative { color: var(--red); }
+    .price-change.positive { 
+        color: #00FF00; 
+        background: rgba(0, 255, 0, 0.1);
+        border: 1px solid #00FF00;
+    }
+    .price-change.negative { 
+        color: #FF3C00; 
+        background: rgba(255, 60, 0, 0.1);
+        border: 1px solid #FF3C00;
+    }
     .period-info {
-        color: var(--muted); font-size: 0.9em;
+        color: #aaa; 
+        font-size: 0.95em;
     }
-    .chart-container {
-        position: relative; height: 400px; width: 100%; margin: 1em 0; 
-        background: #0a0a0a; border: 1px solid #333; border-radius: 8px; padding: 10px;
+    .chart-symbol {
+        color: #6ad1ff;
+        font-weight: 600;
     }
-    .chart-controls {
-        display: flex; gap: 10px; margin-bottom: 1em; flex-wrap: wrap;
+    
+    /* TradingView Widget Container */
+    .tradingview-widget-container {
+        position: relative; 
+        height: 480px; 
+        width: 100%; 
+        margin: 1em 0; 
+        background: #181818; 
+        border: 1px solid #333; 
+        border-radius: 8px; 
+        overflow: hidden;
     }
-    .chart-controls button {
-        background: var(--panel); border: 1px solid var(--line); color: var(--ink); 
-        padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+    #tradingview_chart {
+        width: 100%;
+        height: 100%;
     }
-    .chart-controls button:hover { background: var(--orange); color: var(--bg); }
-    .chart-controls button.active { background: var(--orange); color: var(--bg); }
+    
+    /* Loading State */
+    .chart-loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #181818;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+    .chart-loading p {
+        color: #FFA500;
+        font-size: 1.1em;
+        margin-top: 1em;
+    }
+    
+    /* Loading Spinner */
+    .loading-spinner {
+        border: 4px solid #333;
+        border-top: 4px solid #FFA500;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
     """
+
