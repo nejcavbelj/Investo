@@ -8,6 +8,14 @@ Generates combined reports with Graham, Lynch, and Reddit analyses.
 from config import load_config, startup_warnings
 from core.finnhub_api import set_api_key
 from reports.combined_report_generator import create_combined_report
+from flask import Flask
+from core.feedback_handler import feedback_bp  # adjust path if needed
+
+app = Flask(__name__)
+app.secret_key = "some-secret-key"  # for flash messages
+
+# register blueprint
+app.register_blueprint(feedback_bp)
 
 
 def main():

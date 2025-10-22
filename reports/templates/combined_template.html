@@ -15,30 +15,11 @@
         .container {
             max-width: 1100px; margin: 40px auto; background: var(--panel); padding: 2em; border-radius: 10px; box-shadow: 0 3px 24px #111;
         }
-        h1 { text-align: center; color: var(--orange); letter-spacing: 2px; margin-top: 0; font-size: 2.5em; }
+        h1 { text-align: center; color: var(--orange); letter-spacing: 2px; margin-top: 0; }
         h2 { color: var(--orange); border-bottom: 2px solid var(--line); padding-bottom: 0.5em; margin-top: 2em; }
         
         .company-info {
             background: #1b1b1b; border: 1px solid var(--line); border-radius: 8px; padding: 1.5em; margin: 1em 0;
-            display: flex; align-items: center; gap: 2em;
-        }
-        .company-logo-container {
-            flex-shrink: 0;
-        }
-        .company-logo {
-            width: 100px; height: 100px; border-radius: 50%; 
-            border: 3px solid var(--orange); 
-            box-shadow: 0 0 20px rgba(255, 165, 0, 0.3);
-            object-fit: contain;
-            background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
-            padding: 10px;
-            display: block;
-        }
-        .company-details {
-            flex: 1;
-        }
-        .company-info h2 { 
-            margin-top: 0; margin-bottom: 0.5em; color: var(--orange);
         }
         .company-info p { margin: 0.5em 0; font-size: 1.1em; }
         .company-info strong { color: var(--blue); }
@@ -102,20 +83,6 @@
         }
         .verdict-box h3 { color: var(--orange); font-size: 1.8em; margin: 0 0 0.5em 0; }
         .verdict-summary { font-size: 1.2em; line-height: 1.6; margin: 1em 0; }
-        .verdict-summary .sentiment-indicator { 
-            font-size: 1.5em; font-weight: bold; padding: 0.5em 1em; 
-            border-radius: 8px; display: inline-block; margin-bottom: 0.5em;
-        }
-        .verdict-summary p { margin: 1em 0; color: var(--ink); }
-        .verdict-breakdown { 
-            margin-top: 1.5em; padding: 1em; background: rgba(0,0,0,0.3); 
-            border-radius: 8px; text-align: left; display: inline-block;
-        }
-        .verdict-breakdown strong { color: var(--orange); }
-        .disclaimer { 
-            margin-top: 1.5em; padding-top: 1em; border-top: 1px solid var(--line); 
-            color: var(--muted); font-style: italic;
-        }
         
         .footer { text-align: center; margin-top: 3em; padding-top: 2em; border-top: 1px solid var(--line); color: var(--muted); }
         
@@ -162,79 +129,6 @@
         .verdict-donut[data-verdict="Bullish"] { background: conic-gradient(var(--green) 100%, #333 0%); }
         .verdict-donut[data-verdict="Neutral"] { background: conic-gradient(var(--amber) 100%, #333 0%); }
         .verdict-donut[data-verdict="Bearish"] { background: conic-gradient(var(--red) 100%, #333 0%); }
-        
-        /* Chart styling - now handled by chart module */
-        {{ chart_css | safe }}
-        
-        /* News Section Styling */
-        .news-section {
-            background: #1b1b1b; border: 2px solid var(--orange); border-radius: 12px; 
-            padding: 1.5em; margin: 2em 0; box-shadow: 0 4px 16px rgba(255, 165, 0, 0.1);
-        }
-        .news-section h2 { margin-top: 0; color: var(--orange); font-size: 1.8em; }
-        .news-item {
-            background: #0a0a0a; border: 1px solid #333; border-radius: 8px; 
-            padding: 1.2em; margin: 1em 0; transition: all 0.3s ease;
-        }
-        .news-item:hover {
-            border-color: var(--orange); box-shadow: 0 0 15px rgba(255, 165, 0, 0.2);
-            transform: translateX(5px);
-        }
-        .news-item h3 { margin: 0 0 0.5em 0; color: var(--blue); font-size: 1.2em; }
-        .news-item h3 a { color: var(--blue); text-decoration: none; }
-        .news-item h3 a:hover { color: var(--orange); }
-        .news-meta { color: var(--muted); font-size: 0.9em; margin-top: 0.5em; }
-        .news-source { 
-            color: var(--orange); font-weight: 700; 
-            padding: 0.2em 0.5em; background: rgba(255, 165, 0, 0.1); 
-            border-radius: 4px; border: 1px solid var(--orange);
-        }
-        .news-publisher { color: var(--blue); font-weight: 600; }
-        .news-time { color: var(--muted); font-style: italic; }
-        
-        /* Report Buttons Section */
-        .reports-section {
-            margin: 2em 0;
-        }
-        .report-button {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-            border: 2px solid var(--line); border-radius: 12px; 
-            padding: 1.5em; margin: 1em 0; cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .report-button:hover {
-            border-color: var(--orange); box-shadow: 0 0 20px rgba(255, 165, 0, 0.3);
-            transform: scale(1.02);
-        }
-        .report-button.graham:hover { border-color: var(--blue); box-shadow: 0 0 20px rgba(106, 209, 255, 0.3); }
-        .report-button.lynch:hover { border-color: var(--orange); }
-        .report-button.reddit:hover { border-color: var(--pink); box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
-        
-        .report-button h3 { 
-            margin: 0; font-size: 1.6em; 
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .report-button.graham h3 { color: var(--blue); }
-        .report-button.lynch h3 { color: var(--orange); }
-        .report-button.reddit h3 { color: var(--pink); }
-        
-        .report-button p { margin: 0.5em 0 0 0; color: var(--muted); }
-        .expand-icon {
-            font-size: 1.2em; transition: transform 0.3s ease;
-        }
-        .expand-icon.rotated { transform: rotate(180deg); }
-        
-        /* Collapsible Content */
-        .report-content {
-            max-height: 0; overflow: hidden; 
-            transition: max-height 0.5s ease;
-        }
-        .report-content.expanded {
-            max-height: 10000px;
-        }
-        .report-content-inner {
-            padding-top: 1.5em; border-top: 1px solid var(--line); margin-top: 1em;
-        }
     </style>
 </head>
 <body>
@@ -242,58 +136,17 @@
         <h1>Investo Combined Analysis Report: {{symbol}}</h1>
         
         <div class="company-info">
-            <div class="company-logo-container">
-                <img src="https://assets.parqet.com/logos/symbol/{{symbol}}?format=png" 
-                     alt="{{symbol}} logo" 
-                     class="company-logo"
-                     onerror="this.onerror=null; this.src='https://logo.clearbit.com/{{symbol | lower}}.com'; this.onerror=function(){this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23FFA500%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2230%22 fill=%22%23181818%22 font-weight=%22bold%22%3E{{symbol}}%3C/text%3E%3C/svg%3E';};">
-            </div>
-            <div class="company-details">
-                <h2>Company Information</h2>
-                <p><strong>Name:</strong> {{company_name}}</p>
-                <p><strong>Price:</strong> ${{price}}</p>
-                <p><strong>Sector:</strong> {{sector}}</p>
-                <p><strong>Industry:</strong> {{industry}}</p>
-                <p><strong>Market Cap:</strong> ${{market_cap}}</p>
-            </div>
+            <h2>Company Information</h2>
+            <p><strong>Name:</strong> {{company_name}}</p>
+            <p><strong>Price:</strong> ${{price}}</p>
+            <p><strong>Sector:</strong> {{sector}}</p>
+            <p><strong>Industry:</strong> {{industry}}</p>
+            <p><strong>Market Cap:</strong> ${{market_cap}}</p>
         </div>
         
-        <!-- Stock Price Chart Section - Generated by chart module -->
-        {{ chart_html | safe }}
-        
-        <!-- Latest News Section -->
-        {% if yahoo_news %}
-        <div class="news-section">
-            <h2>Latest News</h2>
-            {% for news in yahoo_news %}
-            <div class="news-item">
-                <h3><a href="{{news.link}}" target="_blank">{{news.title}}</a></h3>
-                <div class="news-meta">
-                    <span class="news-source">{{news.source}}</span> • 
-                    <span class="news-publisher">{{news.publisher}}</span> • 
-                    <span class="news-time">{{news.publish_time}}</span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        
-        <!-- Analysis Reports Section -->
-        <div class="reports-section">
-            <h2 style="color: var(--orange); text-align: center; margin-bottom: 1.5em;">Analysis Reports</h2>
-            
-            <!-- Benjamin Graham Report Button -->
-            <div class="report-button graham" onclick="toggleReport('graham')">
-                <h3>
-                    <span>Benjamin Graham Analysis</span>
-                    <span class="expand-icon" id="graham-icon">▼</span>
-                </h3>
-                <p>Value investing & defensive stock criteria</p>
-                <div class="report-content" id="graham-content">
-                    <div class="report-content-inner">
-                        <!-- Graham Analysis Section -->
+        <!-- Graham Analysis Section -->
         <div class="analysis-section graham-section">
-            <h2>Benjamin Graham Analysis</h2>
+            <h2>📊 Benjamin Graham Analysis</h2>
             
             <table>
                 <tr><th>Metric</th><th>Value</th><th>Graham Criteria</th><th>Status</th></tr>
@@ -353,22 +206,9 @@
             {% endif %}
         </div>
         
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Peter Lynch Report Button -->
-            <div class="report-button lynch" onclick="toggleReport('lynch')">
-                <h3>
-                    <span>Peter Lynch Analysis</span>
-                    <span class="expand-icon" id="lynch-icon">▼</span>
-                </h3>
-                <p>Growth investing & PEG ratio analysis</p>
-                <div class="report-content" id="lynch-content">
-                    <div class="report-content-inner">
-                        <!-- Lynch Analysis Section -->
+        <!-- Lynch Analysis Section -->
         <div class="analysis-section lynch-section">
-            <h2>Peter Lynch Analysis</h2>
+            <h2>🚀 Peter Lynch Analysis</h2>
             
             <table>
                 <tr><th>Metric</th><th>Value</th><th>Lynch Criteria</th><th>Status</th></tr>
@@ -432,22 +272,9 @@
             </div>
         </div>
         
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Reddit Sentiment Report Button -->
-            <div class="report-button reddit" onclick="toggleReport('reddit')">
-                <h3>
-                    <span>Reddit Sentiment Analysis</span>
-                    <span class="expand-icon" id="reddit-icon">▼</span>
-                </h3>
-                <p>Community sentiment & social media buzz</p>
-                <div class="report-content" id="reddit-content">
-                    <div class="report-content-inner">
-                        <!-- Reddit Analysis Section -->
+        <!-- Reddit Analysis Section -->
         <div class="analysis-section reddit-section">
-            <h2>Reddit Sentiment Analysis</h2>
+            <h2>💬 Reddit Sentiment Analysis</h2>
             
             <table>
                 <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
@@ -498,13 +325,20 @@
             </div>
         </div>
         
-                    </div>
-                </div>
+        <!-- Combined Verdict -->
+        <div class="verdict-box">
+            <h3>🎯 Combined Investment Verdict</h3>
+            <div class="verdict-summary">
+                {{combined_verdict}}
+            </div>
+            
+            <div style="margin-top: 1.5em;">
+                <strong>Analysis Breakdown:</strong><br>
+                • Graham Analysis: {% if graham_metrics.Graham_Combined_Test %}<span class="sentiment-indicator sentiment-bullish">BULLISH</span>{% else %}<span class="sentiment-indicator sentiment-bearish">BEARISH</span>{% endif %}<br>
+                • Lynch Analysis: {% if lynch_metrics.PEG and lynch_metrics.PEG < 1.5 %}<span class="sentiment-indicator sentiment-bullish">BULLISH</span>{% else %}<span class="sentiment-indicator sentiment-neutral">NEUTRAL</span>{% endif %}<br>
+                • Reddit Sentiment: <span class="sentiment-indicator sentiment-{{reddit_data.verdict.lower()}}">{{reddit_data.verdict}}</span>
             </div>
         </div>
-        
-        <!-- Combined Verdict - Loaded from separate template -->
-        {% include 'verdict_template.html' %}
         
         <div class="footer">
             <p>Generated by Investo - Combined Analysis System</p>
@@ -523,44 +357,6 @@
                 }
             }
         });
-        
-        // Toggle report sections
-        function toggleReport(reportType) {
-            const content = document.getElementById(reportType + '-content');
-            const icon = document.getElementById(reportType + '-icon');
-            
-            if (content.classList.contains('expanded')) {
-                content.classList.remove('expanded');
-                icon.classList.remove('rotated');
-            } else {
-                // Close all other reports
-                document.querySelectorAll('.report-content').forEach(function(el) {
-                    el.classList.remove('expanded');
-                });
-                document.querySelectorAll('.expand-icon').forEach(function(el) {
-                    el.classList.remove('rotated');
-                });
-                
-                // Open clicked report
-                content.classList.add('expanded');
-                icon.classList.add('rotated');
-            }
-        }
     </script>
- <div class="feedback-box">
-        <h3>💬 Share Your Feedback</h3>
-        <p style="font-size:0.9em;color:gray;margin-bottom:0.8em;">
-          We’d love to hear what you think about Investo.
-        </p>
-      
-        <form method="post" action="/feedback">
-          <textarea name="message" rows="4" placeholder="Write your feedback..." required></textarea>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5em;">
-            <input type="text" name="user" placeholder="Your name (optional)" style="flex:1;margin-right:0.5em;">
-            <button type="submit" class="btn">Send</button>
-          </div>
-        </form>
-      </div>
-      
 </body>
 </html>

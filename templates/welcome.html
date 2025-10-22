@@ -283,22 +283,32 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symbol })
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         analyzeBtn.disabled = false;
         loading.classList.remove("show");
 
-        if (data.success) {
+        if (data.error) {
+          alert(data.error);
+        } else if (data.success && data.report_path) {
           const reportUrl = `/report/${data.report_path.split("/").pop()}`;
           window.location.href = reportUrl;
+        } else if (data.success) {
+          alert(data.message || "Analysis complete! Full reports coming soon.");
         } else {
-          alert(data.error || "Error analyzing stock.");
+          alert("Error analyzing stock.");
         }
       })
-      .catch(() => {
+      .catch(err => {
         analyzeBtn.disabled = false;
         loading.classList.remove("show");
-        alert("Network error. Please try again.");
+        console.error("Analysis error:", err);
+        alert("Network error. Please check console for details.");
       });
     }
   </script>

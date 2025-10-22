@@ -189,6 +189,9 @@ def analyze_stock():
     """Analyze stock and return results"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid request. Please send JSON data.'}), 400
+            
         symbol = data.get('symbol', '').upper().strip()
         
         if not symbol:
@@ -198,29 +201,40 @@ def analyze_stock():
             return jsonify({'error': 'Ticker symbol seems too long. Please enter a valid ticker (e.g., TSLA, AAPL).'}), 400
         
         # Try to run full analysis if available
-        try:
-            if create_combined_report is not None:
+        if create_combined_report is not None:
+            try:
                 report_path = create_combined_report(symbol)
                 if report_path:
                     return jsonify({
                         'success': True,
                         'message': f'Analysis complete for {symbol}!',
                         'symbol': symbol,
-                        'report_path': report_path
-                    })
-        except Exception as analysis_error:
-            print(f"Analysis failed: {analysis_error}")
-        
-        # Fallback to simple response
-        return jsonify({
-            'success': True,
-            'message': f'Analysis request received for {symbol}!',
-            'symbol': symbol,
-            'note': 'Full analysis feature coming soon. Use the terminal version for complete analysis.'
-        })
+                        'report_path': str(report_path)
+                    }), 200
+                else:
+                    return jsonify({
+                        'error': f'Could not generate report for {symbol}. The ticker may not exist or data may be unavailable.'
+                    }), 400
+            except Exception as analysis_error:
+                print(f"Analysis failed for {symbol}: {analysis_error}")
+                import traceback
+                traceback.print_exc()
+                return jsonify({
+                    'error': f'Analysis failed: {str(analysis_error)}'
+                }), 500
+        else:
+            # Fallback when report generator is not available
+            return jsonify({
+                'success': True,
+                'message': f'Analysis system is initializing for {symbol}. Please check back in a moment.',
+                'symbol': symbol
+            }), 200
             
     except Exception as e:
-        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
+        print(f"Unexpected error in /analyze: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/report/<path:filename>')
 def serve_report(filename):
