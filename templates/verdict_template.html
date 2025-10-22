@@ -1,0 +1,20 @@
+<div class="verdict-box">
+    <h3>Combined Investment Verdict</h3>
+    <div class="verdict-summary">
+        <span class="sentiment-indicator {{ verdict.color }}">
+            {{ verdict.verdict }}
+        </span>
+        <p>{{ verdict.summary }}</p>
+    </div>
+
+    <div class="verdict-breakdown">
+        <strong>Score Breakdown:</strong><br>
+        • Graham: {{ verdict.breakdown.graham_score }} / 100<br>
+        • Lynch: {{ verdict.breakdown.lynch_score }} / 100<br>
+        • Reddit Sentiment: {{ verdict.breakdown.reddit_score }} / 100
+    </div>
+
+    <div class="disclaimer">
+        <small><strong>Disclaimer:</strong> This analysis is for informational purposes only and should not be considered financial advice. Always conduct your own research and consult with a financial advisor before making investment decisions.</small>
+    </div>
+</div>

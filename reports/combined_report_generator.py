@@ -8,13 +8,14 @@ import os
 import webbrowser
 from datetime import datetime
 from pathlib import Path
-from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader
 from config.settings import PROJECT_ROOT
 
 from core.data_sources import get_stock_package
 from core.graham_analysis import graham_metrics
 from core.lynch_analysis import lynch_metrics
 from core.reddit_sentiment import get_reddit_sentiment_summary
+from core.investment_verdict import combine_investment_verdict
 from reports.report_builder import get_graham_interpretation, get_lynch_interpretation, generate_graham_summary, generate_lynch_summary
 from charts.chart_renderer import render_chart_html, get_chart_css
 
@@ -193,14 +194,14 @@ def create_combined_report(symbol):
     # Generate summaries
     graham_summary = generate_graham_summary(graham_results)
     lynch_summary = generate_lynch_summary(lynch_results)
-    combined_verdict = generate_combined_verdict(graham_results, lynch_results, reddit_results)
     
-    # Load template
-    template_path = PROJECT_ROOT / "templates" / "combined_template.html"
-    with open(template_path, 'r', encoding='utf-8') as f:
-        template_content = f.read()
+    # Generate new structured verdict using investment_verdict module
+    verdict = combine_investment_verdict(graham_results, lynch_results, reddit_results)
     
-    template = Template(template_content)
+    # Load template with FileSystemLoader to support includes
+    template_dir = PROJECT_ROOT / "templates"
+    env = Environment(loader=FileSystemLoader(str(template_dir)))
+    template = env.get_template("combined_template.html")
     
     # Format market cap
     market_cap = stock_data.get('marketCap')
@@ -228,12 +229,13 @@ def create_combined_report(symbol):
         sector=stock_data.get('sector', 'N/A'),
         industry=stock_data.get('industry', 'N/A'),
         market_cap=market_cap_str,
+        yahoo_news=stock_data.get('yahoo_news', []),
         graham_metrics=graham_results,
         lynch_metrics=lynch_results,
         reddit_data=reddit_results,
         graham_summary=graham_summary,
         lynch_summary=lynch_summary,
-        combined_verdict=combined_verdict,
+        verdict=verdict,  # New structured verdict from investment_verdict module
         chart_html=chart_html,
         chart_css=chart_css,
         generation_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),

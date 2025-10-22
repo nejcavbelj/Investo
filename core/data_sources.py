@@ -181,6 +181,179 @@ def get_company_news(symbol, days=7, max_items=MAX_NEWS_ITEMS):
         if len(out) >= max_items: break
     return out
 
+def get_yahoo_news(symbol, max_items=10):
+    """Get latest news from Yahoo Finance for a stock"""
+    try:
+        ticker = yf.Ticker(symbol)
+        news = ticker.news
+        
+        if not news or len(news) == 0:
+            print(f"No Yahoo Finance news found for {symbol}")
+            return []
+        
+        formatted_news = []
+        for item in news[:max_items]:
+            try:
+                # News items now have 'content' key with nested data
+                if 'content' in item and item['content']:
+                    content = item['content']
+                    
+                    # Extract data from content
+                    title = content.get('title', 'No title available')
+                    
+                    # Try different URL keys
+                    link = content.get('clickThroughUrl', {}).get('url', '') if content.get('clickThroughUrl') else ''
+                    if not link:
+                        link = content.get('canonicalUrl', {}).get('url', '#') if content.get('canonicalUrl') else '#'
+                    
+                    # Get provider info
+                    provider = content.get('provider', {})
+                    publisher = provider.get('displayName', 'Unknown') if provider else 'Unknown'
+                    
+                    # Handle timestamp
+                    timestamp = content.get('pubDate', 0)
+                    if timestamp:
+                        try:
+                            publish_time = datetime.fromtimestamp(timestamp).strftime('%B %d, %Y at %I:%M %p')
+                        except:
+                            publish_time = 'Recently'
+                    else:
+                        publish_time = 'Recently'
+                    
+                    news_item = {
+                        'title': title,
+                        'link': link,
+                        'publisher': publisher,
+                        'publish_time': publish_time,
+                        'source': 'Yahoo Finance',
+                        'timestamp': timestamp  # For sorting
+                    }
+                    formatted_news.append(news_item)
+            except Exception as e:
+                print(f"Error processing Yahoo news item: {e}")
+                continue
+        
+        print(f"Successfully fetched {len(formatted_news)} Yahoo Finance news items for {symbol}")
+        return formatted_news
+        
+    except Exception as e:
+        print(f"Error fetching Yahoo news for {symbol}: {e}")
+        return []
+
+def get_finnhub_news(symbol, max_items=10):
+    """Get latest news from Finnhub for a stock"""
+    try:
+        end = datetime.now().date()
+        start = end - timedelta(days=30)  # Get news from last 30 days
+        
+        news_data = finnhub_get("company-news", {
+            "symbol": symbol, 
+            "from": str(start), 
+            "to": str(end)
+        })
+        
+        if not news_data:
+            print(f"No Finnhub news found for {symbol}")
+            return []
+        
+        formatted_news = []
+        for item in sorted(news_data, key=lambda x: x.get("datetime", 0), reverse=True)[:max_items]:
+            title = item.get('headline', 'No title available')
+            link = item.get('url', '#')
+            publisher = item.get('source', 'Unknown')
+            timestamp = item.get('datetime', 0)
+            
+            if timestamp:
+                try:
+                    publish_time = datetime.fromtimestamp(timestamp).strftime('%B %d, %Y at %I:%M %p')
+                except:
+                    publish_time = 'Recently'
+            else:
+                publish_time = 'Recently'
+            
+            news_item = {
+                'title': title,
+                'link': link,
+                'publisher': publisher,
+                'publish_time': publish_time,
+                'source': 'Finnhub',
+                'timestamp': timestamp
+            }
+            formatted_news.append(news_item)
+        
+        print(f"Successfully fetched {len(formatted_news)} Finnhub news items for {symbol}")
+        return formatted_news
+        
+    except Exception as e:
+        print(f"Error fetching Finnhub news for {symbol}: {e}")
+        return []
+
+def get_tradingview_news(symbol, max_items=10):
+    """
+    Get news from TradingView-compatible sources
+    Note: TradingView doesn't have a public API, so we'll use alternative news sources
+    """
+    # TradingView doesn't have a public news API
+    # This is a placeholder for future implementation
+    print(f"TradingView news API not available (no public API)")
+    return []
+
+def get_aggregated_news(symbol, max_items=3):
+    """
+    Aggregate news from multiple sources, remove duplicates, and return top 3 latest
+    """
+    print(f"Fetching aggregated news for {symbol} from multiple sources...")
+    
+    all_news = []
+    
+    # Fetch from all sources
+    yahoo_news = get_yahoo_news(symbol, max_items=10)
+    finnhub_news = get_finnhub_news(symbol, max_items=10)
+    tradingview_news = get_tradingview_news(symbol, max_items=10)
+    
+    # Combine all news
+    all_news.extend(yahoo_news)
+    all_news.extend(finnhub_news)
+    all_news.extend(tradingview_news)
+    
+    if not all_news:
+        print(f"No news found from any source for {symbol}")
+        return []
+    
+    # Remove duplicates based on similar titles
+    unique_news = []
+    seen_titles = set()
+    
+    # Sort by timestamp (most recent first)
+    all_news.sort(key=lambda x: x.get('timestamp', 0), reverse=True)
+    
+    for news_item in all_news:
+        title = news_item['title'].lower().strip()
+        
+        # Create a simplified version of the title for comparison
+        # Remove common words and punctuation
+        title_words = set(title.split())
+        
+        # Check if this title is too similar to any existing title
+        is_duplicate = False
+        for seen_title in seen_titles:
+            seen_words = set(seen_title.split())
+            # If more than 70% of words match, consider it a duplicate
+            common_words = title_words & seen_words
+            if len(common_words) > 0 and len(common_words) / max(len(title_words), len(seen_words)) > 0.7:
+                is_duplicate = True
+                break
+        
+        if not is_duplicate:
+            unique_news.append(news_item)
+            seen_titles.add(title)
+            
+            if len(unique_news) >= max_items:
+                break
+    
+    print(f"Aggregated {len(unique_news)} unique news items from {len(all_news)} total articles")
+    return unique_news
+
 def get_global_news(max_items=MAX_GLOBAL_NEWS):
     """Get global market news from Finnhub"""
     js = finnhub_get("news", {"category": "general"})
@@ -222,7 +395,8 @@ def get_stock_package(symbol):
     """Get complete stock data package including fundamentals, news, and sentiment"""
     from charts.chart_data import get_chart_data
     d = get_full_stock_data(symbol)
-    d["news"] = get_company_news(symbol)
+    d["news"] = get_company_news(symbol)  # Keep old Finnhub news for compatibility
+    d["yahoo_news"] = get_aggregated_news(symbol, max_items=3)  # Aggregated news from all sources
     d["crowd"] = get_crowd_sentiment(symbol)
     d["chart_data"] = get_chart_data(symbol, "1y")  # Default to 1 year
     return d

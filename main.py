@@ -9,6 +9,7 @@ from config import load_config, startup_warnings
 from core.finnhub_api import set_api_key
 from reports.combined_report_generator import create_combined_report
 
+
 def main():
     """Main entry point for Investo"""
     print("Starting Investo Combined Analysis System...")
