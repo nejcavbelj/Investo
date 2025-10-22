@@ -1,427 +1,245 @@
 """
-Investo Feedback Server
-========================
-Flask web server to handle feedback submissions from generated HTML reports.
-Run this alongside the main Investo application to receive user feedback.
+Investo Web Application
+======================
+Flask web application for Railway deployment with welcome page and stock analysis.
 """
 
-from flask import Flask, request, redirect, render_template_string, flash
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from config import load_config
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 import os
+import sys
+from pathlib import Path
 
-app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Random secret key for sessions
+PROJECT_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
-# Load configuration
-config = load_config()
+app = Flask(__name__, template_folder=str(PROJECT_ROOT / 'templates'))
 
-# Gmail Configuration
-SENDER_EMAIL = "investosystem@gmail.com"
-RECIPIENT_EMAIL = "investosystem@gmail.com"
+# Try to load configuration, but don't fail if it's not available
+config = {}
+create_combined_report = None
 
+try:
+    from config import load_config, startup_warnings
+    config = load_config()
+except Exception as e:
+    print(f"Warning: Could not load config: {e}")
 
-@app.route("/")
+try:
+    from core.finnhub_api import set_api_key
+    if config.get('FINNHUB_API_KEY'):
+        set_api_key(config['FINNHUB_API_KEY'])
+except Exception as e:
+    print(f"Warning: Could not set API key: {e}")
+
+try:
+    from reports.combined_report_generator import create_combined_report
+except Exception as e:
+    print(f"Warning: Could not import report generator: {e}")
+    create_combined_report = None
+
+@app.route('/')
 def index():
-    """Landing page"""
-    return """
-    <html>
-    <head>
-        <title>Investo Feedback Server</title>
-        <style>
-            body {
-                font-family: 'Segoe UI', Arial, sans-serif;
-                background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-                color: #fff;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                margin: 0;
-            }
-            .container {
-                text-align: center;
-                background: #222;
-                padding: 3em;
-                border-radius: 15px;
-                box-shadow: 0 8px 32px rgba(255, 165, 0, 0.2);
-                border: 1px solid #FFA500;
-            }
-            h1 {
-                color: #FFA500;
-                margin-bottom: 0.5em;
-                font-size: 2.5em;
-            }
-            p {
-                color: #aaa;
-                font-size: 1.1em;
-            }
-            .status {
-                display: inline-block;
-                background: #00FF00;
-                color: #000;
-                padding: 0.5em 1em;
-                border-radius: 20px;
-                margin-top: 1em;
-                font-weight: bold;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Investo Feedback Server</h1>
-            <p>The feedback server is running successfully!</p>
-            <div class="status">ONLINE</div>
-            <p style="margin-top: 2em; font-size: 0.9em;">
-                This server handles feedback submissions from Investo reports.
-            </p>
-        </div>
-    </body>
-    </html>
-    """
-
-
-@app.route("/feedback", methods=["POST"])
-def receive_feedback():
-    """Handle feedback form submissions"""
+    """Welcome page matching the photo graphics"""
     try:
-        user = request.form.get("user", "Anonymous").strip() or "Anonymous"
-        message = request.form.get("message", "").strip()
+        # Check if template exists
+        template_path = PROJECT_ROOT / "templates" / "welcome.html"
+        if not template_path.exists():
+            return f"Welcome to Investo! (Template file not found: {template_path})", 200
+        
+        return render_template('welcome.html')
     except Exception as e:
-        print(f"Error parsing form data: {e}")
-        return f"<h1>Error</h1><p>Error parsing form data: {e}</p>", 500
-
-    if not message:
-        # Return a simple error page
-        return """
-        <html>
-        <head>
-            <title>Error - Investo Feedback</title>
-            <style>
-                body {
-                    font-family: 'Segoe UI', Arial, sans-serif;
-                    background: #1a1a1a;
-                    color: #fff;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    margin: 0;
-                }
-                .container {
-                    text-align: center;
-                    background: #222;
-                    padding: 3em;
-                    border-radius: 15px;
-                }
-                h1 { color: #FF3C00; }
-                a {
-                    color: #FFA500;
-                    text-decoration: none;
-                    display: inline-block;
-                    margin-top: 1em;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>❌ Error</h1>
-                <p>Message cannot be empty.</p>
-                <a href="javascript:history.back()">← Go Back</a>
-            </div>
-        </body>
-        </html>
-        """
-
-    # Get Gmail app password from config
-    gmail_password = config.get('GMAIL_APP_PASSWORD')
-    
-    if not gmail_password:
-        print("ERROR: GMAIL_APP_PASSWORD not set in .env file")
-        return """
-        <html>
-        <head>
-            <title>Configuration Error - Investo Feedback</title>
-            <style>
-                body {
-                    font-family: 'Segoe UI', Arial, sans-serif;
-                    background: #1a1a1a;
-                    color: #fff;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    margin: 0;
-                }
-                .container {
-                    text-align: center;
-                    background: #222;
-                    padding: 3em;
-                    border-radius: 15px;
-                }
-                h1 { color: #FF3C00; }
-                p { color: #aaa; margin: 1em 0; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>⚙️ Configuration Error</h1>
-                <p>Gmail app password is not configured.</p>
-                <p>Please add GMAIL_APP_PASSWORD to your .env file.</p>
-            </div>
-        </body>
-        </html>
-        """
-
-    # Compose email
-    subject = f"New Investo Feedback from {user}"
-    
-    # Create HTML email
-    html_body = f"""
-    <html>
-    <head>
-        <style>
-            body {{
-                font-family: 'Segoe UI', Arial, sans-serif;
-                background-color: #f5f5f5;
-                padding: 20px;
-            }}
-            .email-container {{
-                max-width: 600px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }}
-            .header {{
-                background: linear-gradient(135deg, #FFA500 0%, #FF8C00 100%);
-                color: white;
-                padding: 30px;
-                text-align: center;
-            }}
-            .header h1 {{
-                margin: 0;
-                font-size: 24px;
-            }}
-            .content {{
-                padding: 30px;
-            }}
-            .user-info {{
-                background: #f9f9f9;
-                border-left: 4px solid #FFA500;
-                padding: 15px;
-                margin-bottom: 20px;
-            }}
-            .message-box {{
-                background: #f9f9f9;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                padding: 20px;
-                line-height: 1.6;
-            }}
-            .footer {{
-                text-align: center;
-                padding: 20px;
-                color: #888;
-                font-size: 12px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="header">
-                <h1>New Feedback from Investo User</h1>
-            </div>
-            <div class="content">
-                <div class="user-info">
-                    <strong>From:</strong> {user}
-                </div>
-                <div class="message-box">
-                    <strong>Message:</strong><br><br>
-                    {message.replace(chr(10), '<br>')}
-                </div>
-            </div>
-            <div class="footer">
-                Sent via Investo Feedback System
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
-    # Create plain text version
-    text_body = f"""
-New Investo Feedback
-
-From: {user}
-
-Message:
-{message}
-
----
-Sent via Investo Feedback System
-    """
-    
-    # Create MIME message
-    msg = MIMEMultipart('alternative')
-    msg["Subject"] = subject
-    msg["From"] = SENDER_EMAIL
-    msg["To"] = RECIPIENT_EMAIL
-    
-    # Attach both plain text and HTML versions
-    msg.attach(MIMEText(text_body, 'plain'))
-    msg.attach(MIMEText(html_body, 'html'))
-
-    try:
-        # Send via Gmail SMTP
-        print(f"Sending feedback email from {user}...")
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(SENDER_EMAIL, gmail_password)
-            server.send_message(msg)
-        
-        print(f"✓ Feedback email sent successfully!")
-        
-        # Return success page
-        return """
-        <html>
-        <head>
-            <title>Thank You - Investo Feedback</title>
-            <style>
-                body {
-                    font-family: 'Segoe UI', Arial, sans-serif;
-                    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-                    color: #fff;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    margin: 0;
-                }
-                .container {
-                    text-align: center;
-                    background: #222;
-                    padding: 3em;
-                    border-radius: 15px;
-                    box-shadow: 0 8px 32px rgba(0, 255, 0, 0.2);
-                    border: 1px solid #00FF00;
-                }
-                h1 {
-                    color: #00FF00;
-                    margin-bottom: 0.5em;
-                    font-size: 2.5em;
-                }
-                p {
-                    color: #aaa;
-                    font-size: 1.1em;
-                }
-                .checkmark {
-                    font-size: 4em;
-                    margin-bottom: 0.2em;
-                }
-                a {
-                    color: #FFA500;
-                    text-decoration: none;
-                    display: inline-block;
-                    margin-top: 1em;
-                    padding: 0.5em 1em;
-                    border: 1px solid #FFA500;
-                    border-radius: 5px;
-                    transition: all 0.3s;
-                }
-                a:hover {
-                    background: #FFA500;
-                    color: #000;
-                }
-            </style>
-            <script>
-                // Auto-close after 3 seconds
-                setTimeout(function() {
-                    window.close();
-                }, 3000);
-            </script>
-        </head>
-        <body>
-            <div class="container">
-                <div class="checkmark">✓</div>
-                <h1>Thank You!</h1>
-                <p>Your feedback has been sent successfully.</p>
-                <p style="font-size: 0.9em; color: #666;">This window will close automatically...</p>
-                <a href="javascript:window.close()">Close Window</a>
-            </div>
-        </body>
-        </html>
-        """
-        
-    except Exception as e:
-        print(f"✗ Error sending email: {e}")
-        
-        # Return error page
+        # Return a simple HTML page instead of just text
         return f"""
+        <!DOCTYPE html>
         <html>
         <head>
-            <title>Error - Investo Feedback</title>
+            <title>Investo - Smart Stock Analysis</title>
             <style>
-                body {{
-                    font-family: 'Segoe UI', Arial, sans-serif;
-                    background: #1a1a1a;
-                    color: #fff;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    margin: 0;
-                }}
-                .container {{
-                    text-align: center;
-                    background: #222;
-                    padding: 3em;
-                    border-radius: 15px;
-                    border: 1px solid #FF3C00;
-                }}
-                h1 {{ color: #FF3C00; }}
-                p {{ color: #aaa; margin: 1em 0; }}
-                .error-details {{
-                    background: #1a1a1a;
-                    padding: 1em;
-                    border-radius: 5px;
-                    margin-top: 1em;
-                    font-family: monospace;
-                    font-size: 0.9em;
-                    color: #ff6b6b;
-                }}
-                a {{
-                    color: #FFA500;
-                    text-decoration: none;
-                    display: inline-block;
-                    margin-top: 1em;
-                }}
+                body {{ font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 50px; text-align: center; }}
+                h1 {{ color: #ffa500; font-size: 3rem; margin-bottom: 20px; }}
+                p {{ font-size: 1.2rem; margin-bottom: 10px; }}
+                .error {{ color: #ff6b6b; background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px; }}
+                a {{ color: #6ad1ff; text-decoration: none; margin: 0 15px; }}
+                a:hover {{ text-decoration: underline; }}
             </style>
         </head>
         <body>
-            <div class="container">
-                <h1>❌ Failed to Send Feedback</h1>
-                <p>An error occurred while sending your feedback.</p>
-                <div class="error-details">{str(e)}</div>
-                <p style="margin-top: 2em;">Please try again later or contact support directly.</p>
-                <a href="javascript:history.back()">← Go Back</a>
+            <h1>Investo</h1>
+            <p>Smart Stock Analysis Platform</p>
+            <div class="error">
+                <p>Template Error: {e}</p>
+                <p>But the app is working! You can still use the analysis features:</p>
+            </div>
+            <div>
+                <a href="/health">Health Check</a>
+                <a href="/graham">Graham Analysis</a>
+                <a href="/lynch">Lynch Analysis</a>
+                <a href="/reddit">Reddit Analysis</a>
             </div>
         </body>
         </html>
-        """
+        """, 200
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for Railway"""
+    return {"status": "ok"}, 200
 
-if __name__ == "__main__":
-    print("=" * 60)
-    print("Starting Investo Feedback Server")
-    print("=" * 60)
-    print(f"Server will run on: http://localhost:5000")
-    print(f"Feedback endpoint: http://localhost:5000/feedback")
-    print(f"Feedback will be sent to: {RECIPIENT_EMAIL}")
-    print("=" * 60)
-    print("\nPress Ctrl+C to stop the server\n")
+@app.route('/graham')
+def graham_analysis():
+    """Benjamin Graham analysis page"""
+    try:
+        return render_template('graham_analysis.html')
+    except Exception as e:
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Graham Analysis - Investo</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 50px; text-align: center; }}
+                h1 {{ color: #6ad1ff; font-size: 2.5rem; margin-bottom: 20px; }}
+                .error {{ color: #ff6b6b; background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px; }}
+                a {{ color: #ffa500; text-decoration: none; margin: 0 15px; }}
+            </style>
+        </head>
+        <body>
+            <h1>Benjamin Graham Analysis</h1>
+            <div class="error">
+                <p>Template Error: {e}</p>
+                <p>Graham analysis feature coming soon!</p>
+            </div>
+            <div>
+                <a href="/">Home</a>
+                <a href="/lynch">Lynch Analysis</a>
+                <a href="/reddit">Reddit Analysis</a>
+            </div>
+        </body>
+        </html>
+        """, 200
+
+@app.route('/lynch')
+def lynch_analysis():
+    """Peter Lynch analysis page"""
+    try:
+        return render_template('lynch_analysis.html')
+    except Exception as e:
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Lynch Analysis - Investo</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 50px; text-align: center; }}
+                h1 {{ color: #ffa500; font-size: 2.5rem; margin-bottom: 20px; }}
+                .error {{ color: #ff6b6b; background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px; }}
+                a {{ color: #6ad1ff; text-decoration: none; margin: 0 15px; }}
+            </style>
+        </head>
+        <body>
+            <h1>Peter Lynch Analysis</h1>
+            <div class="error">
+                <p>Template Error: {e}</p>
+                <p>Lynch analysis feature coming soon!</p>
+            </div>
+            <div>
+                <a href="/">Home</a>
+                <a href="/graham">Graham Analysis</a>
+                <a href="/reddit">Reddit Analysis</a>
+            </div>
+        </body>
+        </html>
+        """, 200
+
+@app.route('/reddit')
+def reddit_analysis():
+    """Reddit sentiment analysis page"""
+    try:
+        return render_template('reddit_analysis.html')
+    except Exception as e:
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Reddit Analysis - Investo</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 50px; text-align: center; }}
+                h1 {{ color: #FF6B6B; font-size: 2.5rem; margin-bottom: 20px; }}
+                .error {{ color: #ff6b6b; background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px; }}
+                a {{ color: #6ad1ff; text-decoration: none; margin: 0 15px; }}
+            </style>
+        </head>
+        <body>
+            <h1>Reddit Sentiment Analysis</h1>
+            <div class="error">
+                <p>Template Error: {e}</p>
+                <p>Reddit analysis feature coming soon!</p>
+            </div>
+            <div>
+                <a href="/">Home</a>
+                <a href="/graham">Graham Analysis</a>
+                <a href="/lynch">Lynch Analysis</a>
+            </div>
+        </body>
+        </html>
+        """, 200
+
+@app.route('/analyze', methods=['POST'])
+def analyze_stock():
+    """Analyze stock and return results"""
+    try:
+        data = request.get_json()
+        symbol = data.get('symbol', '').upper().strip()
+        
+        if not symbol:
+            return jsonify({'error': 'Please enter a valid ticker symbol'}), 400
+            
+        if len(symbol) > 10:
+            return jsonify({'error': 'Ticker symbol seems too long. Please enter a valid ticker (e.g., TSLA, AAPL).'}), 400
+        
+        # Try to run full analysis if available
+        try:
+            if create_combined_report is not None:
+                report_path = create_combined_report(symbol)
+                if report_path:
+                    return jsonify({
+                        'success': True,
+                        'message': f'Analysis complete for {symbol}!',
+                        'symbol': symbol,
+                        'report_path': report_path
+                    })
+        except Exception as analysis_error:
+            print(f"Analysis failed: {analysis_error}")
+        
+        # Fallback to simple response
+        return jsonify({
+            'success': True,
+            'message': f'Analysis request received for {symbol}!',
+            'symbol': symbol,
+            'note': 'Full analysis feature coming soon. Use the terminal version for complete analysis.'
+        })
+            
+    except Exception as e:
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
+
+@app.route('/report/<path:filename>')
+def serve_report(filename):
+    """Serve generated reports"""
+    reports_dir = PROJECT_ROOT / "reports" / "generated"
+    file_path = reports_dir / filename
     
-    # Run Flask app
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    if file_path.exists():
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return content
+    else:
+        return "Report not found", 404
+
+if __name__ == '__main__':
+    # Create templates directory if it doesn't exist
+    templates_dir = PROJECT_ROOT / "templates"
+    templates_dir.mkdir(exist_ok=True)
+    
+    # Run the Flask app
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
