@@ -298,8 +298,20 @@
         } else if (data.success && data.report_path) {
           const reportUrl = `/report/${data.report_path.split("/").pop()}`;
           window.location.href = reportUrl;
-        } else if (data.success) {
-          alert(data.message || "Analysis complete! Full reports coming soon.");
+        } else if (data.success && data.message) {
+          // System not fully configured
+          if (data.message.includes("initializing")) {
+            alert("⚠️ System Configuration Required\n\n" +
+                  "The analysis system needs environment variables configured in Railway:\n" +
+                  "• FINNHUB_API_KEY\n" +
+                  "• OPENAI_API_KEY\n" +
+                  "• REDDIT_CLIENT_ID\n" +
+                  "• REDDIT_CLIENT_SECRET\n" +
+                  "• REDDIT_USER_AGENT\n\n" +
+                  "Visit /status endpoint to check configuration status.");
+          } else {
+            alert(data.message);
+          }
         } else {
           alert("Error analyzing stock.");
         }

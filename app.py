@@ -13,29 +13,60 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 app = Flask(__name__, template_folder=str(PROJECT_ROOT / 'templates'))
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Register feedback blueprint
+try:
+    from core.feedback_handler import feedback_bp
+    app.register_blueprint(feedback_bp)
+    print("✓ Feedback handler registered")
+except Exception as e:
+    print(f"✗ Warning: Could not register feedback handler: {e}")
 
 # Try to load configuration, but don't fail if it's not available
 config = {}
 create_combined_report = None
 
+print("=" * 60)
+print("Initializing Investo Flask App...")
+print("=" * 60)
+
 try:
     from config import load_config, startup_warnings
     config = load_config()
+    print("✓ Configuration loaded successfully")
 except Exception as e:
-    print(f"Warning: Could not load config: {e}")
+    print(f"✗ Warning: Could not load config: {e}")
+    import traceback
+    traceback.print_exc()
 
 try:
     from core.finnhub_api import set_api_key
     if config.get('FINNHUB_API_KEY'):
         set_api_key(config['FINNHUB_API_KEY'])
+        print("✓ Finnhub API key configured")
+    else:
+        print("✗ Warning: FINNHUB_API_KEY not found in config")
 except Exception as e:
-    print(f"Warning: Could not set API key: {e}")
+    print(f"✗ Warning: Could not set API key: {e}")
+    import traceback
+    traceback.print_exc()
 
 try:
     from reports.combined_report_generator import create_combined_report
+    print("✓ Report generator imported successfully")
 except Exception as e:
-    print(f"Warning: Could not import report generator: {e}")
+    print(f"✗ ERROR: Could not import report generator: {e}")
+    import traceback
+    traceback.print_exc()
     create_combined_report = None
+
+print("=" * 60)
+if create_combined_report:
+    print("STATUS: Report generator is READY")
+else:
+    print("STATUS: Report generator is NOT AVAILABLE")
+print("=" * 60)
 
 @app.route('/')
 def index():
@@ -84,6 +115,21 @@ def index():
 def health_check():
     """Health check endpoint for Railway"""
     return {"status": "ok"}, 200
+
+@app.route('/status')
+def status_check():
+    """Diagnostic endpoint to check system status"""
+    status = {
+        "app": "running",
+        "config_loaded": bool(config),
+        "report_generator": "available" if create_combined_report else "unavailable",
+        "required_env_vars": {
+            "FINNHUB_API_KEY": "set" if os.getenv("FINNHUB_API_KEY") else "missing",
+            "OPENAI_API_KEY": "set" if os.getenv("OPENAI_API_KEY") else "missing",
+            "REDDIT_CLIENT_ID": "set" if os.getenv("REDDIT_CLIENT_ID") else "missing",
+        }
+    }
+    return status, 200
 
 @app.route('/graham')
 def graham_analysis():

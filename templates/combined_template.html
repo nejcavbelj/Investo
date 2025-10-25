@@ -547,10 +547,27 @@
             }
         }
     </script>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="margin: 1rem 0;">
+          {% for category, message in messages %}
+            <div style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; 
+                        background: {% if category == 'success' %}#1a4d2e{% else %}#4d1a1a{% endif %}; 
+                        border: 1px solid {% if category == 'success' %}#2d7a4d{% else %}#7a2d2d{% endif %}; 
+                        color: {% if category == 'success' %}#66ff99{% else %}#ff6666{% endif %};">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
  <div class="feedback-box">
         <h3>💬 Share Your Feedback</h3>
         <p style="font-size:0.9em;color:gray;margin-bottom:0.8em;">
-          We’d love to hear what you think about Investo.
+          We'd love to hear what you think about Investo.
         </p>
       
         <form method="post" action="/feedback">
