@@ -15,6 +15,11 @@ sys.path.insert(0, str(PROJECT_ROOT))
 app = Flask(__name__, template_folder=str(PROJECT_ROOT / 'templates'))
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
 
+# Register feedback blueprint
+from core.feedback_handler import feedback_bp
+app.register_blueprint(feedback_bp)
+
+
 # Add CORS headers to all responses
 @app.after_request
 def after_request(response):

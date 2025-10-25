@@ -1,115 +1,110 @@
 """
 Feedback Handler
 ----------------
-Receives user feedback from Investo report form and sends it to your Gmail inbox.
+Receives user feedback from Investo web form and sends it to Gmail inbox.
+Also saves a local backup file for each submission.
 """
 
-from flask import Blueprint, request, redirect, flash, jsonify
+from flask import Blueprint, request, jsonify
 import smtplib
 from email.mime.text import MIMEText
 import os
 from datetime import datetime
 from pathlib import Path
+import traceback
 
+# Blueprint setup
 feedback_bp = Blueprint("feedback_bp", __name__)
 
-# --- Gmail Config ---
+# --- Gmail Configuration ---
 SENDER_EMAIL = "investosystem@gmail.com"
-SENDER_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")  # Use App Password, not main password
+SENDER_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")  # App Password required
 RECIPIENT_EMAIL = "investosystem@gmail.com"
 
-# --- Feedback Storage ---
+# --- Feedback Storage Directory ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 FEEDBACK_DIR = PROJECT_ROOT / "feedback"
 FEEDBACK_DIR.mkdir(exist_ok=True)
 
-def save_feedback_to_file(user, message):
-    """Save feedback to a file as backup"""
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = FEEDBACK_DIR / f"feedback_{timestamp}.txt"
-    
+
+def save_feedback_to_file(user: str, message: str) -> bool:
+    """Save feedback to a timestamped file as backup."""
     try:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = FEEDBACK_DIR / f"feedback_{timestamp}.txt"
+
         with open(filename, 'w', encoding='utf-8') as f:
-            f.write(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Timestamp: {datetime.now():%Y-%m-%d %H:%M:%S}\n")
             f.write(f"User: {user}\n")
-            f.write(f"{'='*60}\n")
+            f.write("=" * 60 + "\n")
             f.write(f"Message:\n{message}\n")
+
         print(f"✓ Feedback saved to: {filename}")
         return True
     except Exception as e:
         print(f"✗ Error saving feedback to file: {e}")
+        traceback.print_exc()
         return False
+
 
 @feedback_bp.route("/feedback", methods=["POST"])
 def receive_feedback():
-    """Handle feedback form submission"""
-    print("\n" + "="*60)
-    print("Received feedback submission")
-    print("="*60)
-    
+    """Receive feedback from Investo frontend and send to Gmail."""
+    print("\n" + "=" * 60)
+    print("📨 Received feedback submission")
+    print("=" * 60)
+
     try:
-        user = request.form.get("user", "Anonymous").strip() or "Anonymous"
-        message = request.form.get("message", "").strip()
-        
+        # --- Get Data ---
+        data = request.get_json() or request.form
+        user = (data.get("user") or "Anonymous").strip()
+        message = (data.get("message") or "").strip()
+
         print(f"User: {user}")
         print(f"Message length: {len(message)} characters")
 
         if not message:
-            print("ERROR: Empty message")
-            flash("Message cannot be empty.", "error")
-            return redirect(request.referrer or "/")
+            print("❌ Error: Empty message received.")
+            return jsonify({"error": "Message cannot be empty."}), 400
 
-        # Always save to file first
+        # --- Save to file ---
         file_saved = save_feedback_to_file(user, message)
 
-        # Try to send email if credentials are configured
+        # --- Send via Gmail ---
         email_sent = False
         if SENDER_PASSWORD:
             try:
-                # Compose email
                 subject = f"New Feedback from {user}"
                 body = f"User: {user}\n\nMessage:\n{message}"
+
                 msg = MIMEText(body)
                 msg["Subject"] = subject
                 msg["From"] = SENDER_EMAIL
                 msg["To"] = RECIPIENT_EMAIL
 
-                # Send via Gmail SMTP
                 with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
                     server.login(SENDER_EMAIL, SENDER_PASSWORD)
                     server.send_message(msg)
-                
-                print("✓ Email sent successfully")
+
+                print("✅ Feedback email sent successfully to Gmail inbox.")
                 email_sent = True
             except Exception as e:
-                print(f"✗ Error sending email: {e}")
-                import traceback
+                print(f"✗ Error sending Gmail feedback: {e}")
                 traceback.print_exc()
         else:
-            print("⚠ GMAIL_APP_PASSWORD not configured - email not sent")
+            print("⚠️ GMAIL_APP_PASSWORD not set in environment — skipping email send.")
 
-        # Show success message
+        print("=" * 60 + "\n")
+
+        # --- JSON Response ---
         if email_sent:
-            flash("✅ Thank you for your feedback! We've received your message via email.", "success")
+            return jsonify({"success": True, "message": "✅ Thank you! Feedback sent to Investo inbox."}), 200
         elif file_saved:
-            flash("✅ Thank you for your feedback! Your message has been saved.", "success")
+            return jsonify({"success": True, "message": "✅ Feedback saved locally (email unavailable)."}), 200
         else:
-            flash("⚠️ Feedback received but could not be saved. Please try again.", "error")
+            return jsonify({"error": "⚠️ Could not save or send feedback. Please try again later."}), 500
 
-        print("="*60 + "\n")
-        
-        # Safe redirect
-        referrer = request.referrer
-        if referrer:
-            return redirect(referrer)
-        else:
-            return redirect("/")
-            
     except Exception as e:
         print(f"✗ Unexpected error in feedback handler: {e}")
-        import traceback
         traceback.print_exc()
-        flash("❌ An error occurred. Please try again later.", "error")
-        return redirect(request.referrer or "/")
-        
-print(f"📨 Feedback API called, data received: {message}")
+        return jsonify({"error": f"Server error: {e}"}), 500
