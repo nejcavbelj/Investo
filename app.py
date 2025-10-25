@@ -43,6 +43,8 @@ create_combined_report = None
 print("=" * 60)
 print("Initializing Investo Flask App...")
 print("=" * 60)
+print("DEBUG: GMAIL_APP_PASSWORD found?", bool(os.getenv("GMAIL_APP_PASSWORD")))
+
 
 try:
     from config import load_config, startup_warnings

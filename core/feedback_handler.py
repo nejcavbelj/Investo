@@ -1,14 +1,13 @@
 """
 Feedback Handler
 ----------------
-Receives user feedback from Investo web form and sends it to Gmail inbox.
+Receives user feedback from Investo web form and sends it via Brevo API.
 Also saves a local backup file for each submission.
 """
 
 from flask import Blueprint, request, jsonify
-import smtplib
-from email.mime.text import MIMEText
 import os
+import requests
 from datetime import datetime
 from pathlib import Path
 import traceback
@@ -16,10 +15,10 @@ import traceback
 # Blueprint setup
 feedback_bp = Blueprint("feedback_bp", __name__)
 
-# --- Gmail Configuration ---
+# --- Email Configuration (Brevo API) ---
 SENDER_EMAIL = "investosystem@gmail.com"
-SENDER_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")  # App Password required
 RECIPIENT_EMAIL = "investosystem@gmail.com"
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")  # Stored in Railway environment variables
 
 # --- Feedback Storage Directory ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -47,19 +46,55 @@ def save_feedback_to_file(user: str, message: str) -> bool:
         return False
 
 
+def send_feedback_via_brevo(user: str, message: str) -> bool:
+    """Send feedback email using Brevo (Sendinblue) API over HTTPS."""
+    if not BREVO_API_KEY:
+        print("⚠️ BREVO_API_KEY not set — cannot send email.")
+        return False
+
+    subject = f"New Feedback from {user}"
+    body = f"User: {user}\n\nMessage:\n{message}"
+
+    payload = {
+        "sender": {"name": "Investo Feedback", "email": SENDER_EMAIL},
+        "to": [{"email": RECIPIENT_EMAIL}],
+        "subject": subject,
+        "textContent": body
+    }
+
+    try:
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={
+                "api-key": BREVO_API_KEY,
+                "accept": "application/json",
+                "content-type": "application/json"
+            },
+            json=payload,
+            timeout=15
+        )
+        if response.status_code in (200, 201):
+            print("✅ Feedback email sent successfully via Brevo API.")
+            return True
+        else:
+            print(f"✗ Brevo API error: {response.status_code} - {response.text[:200]}")
+            return False
+    except Exception as e:
+        print(f"✗ Exception sending via Brevo: {e}")
+        traceback.print_exc()
+        return False
+
+
 @feedback_bp.route("/feedback", methods=["POST"])
 def receive_feedback():
-    """Receive feedback from Investo frontend and send to Gmail."""
+    """Receive feedback from Investo frontend and forward via Brevo API."""
     print("\n" + "=" * 60)
     print("📨 Received feedback submission")
     print("=" * 60)
 
     try:
         # --- Get Data ---
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.form
+        data = request.get_json(force=True, silent=True) or request.form
         user = (data.get("user") or "Anonymous").strip()
         message = (data.get("message") or "").strip()
 
@@ -70,38 +105,17 @@ def receive_feedback():
             print("❌ Error: Empty message received.")
             return jsonify({"error": "Message cannot be empty."}), 400
 
-        # --- Save to file ---
+        # --- Save feedback locally ---
         file_saved = save_feedback_to_file(user, message)
 
-        # --- Send via Gmail ---
-        email_sent = False
-        if SENDER_PASSWORD:
-            try:
-                subject = f"New Feedback from {user}"
-                body = f"User: {user}\n\nMessage:\n{message}"
-
-                msg = MIMEText(body)
-                msg["Subject"] = subject
-                msg["From"] = SENDER_EMAIL
-                msg["To"] = RECIPIENT_EMAIL
-
-                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                    server.login(SENDER_EMAIL, SENDER_PASSWORD)
-                    server.send_message(msg)
-
-                print("✅ Feedback email sent successfully to Gmail inbox.")
-                email_sent = True
-            except Exception as e:
-                print(f"✗ Error sending Gmail feedback: {e}")
-                traceback.print_exc()
-        else:
-            print("⚠️ GMAIL_APP_PASSWORD not set in environment — skipping email send.")
+        # --- Send via Brevo API ---
+        email_sent = send_feedback_via_brevo(user, message)
 
         print("=" * 60 + "\n")
 
         # --- JSON Response ---
         if email_sent:
-            return jsonify({"success": True, "message": "✅ Thank you! Feedback sent to Investo inbox."}), 200
+            return jsonify({"success": True, "message": "✅ Feedback sent to Investo inbox."}), 200
         elif file_saved:
             return jsonify({"success": True, "message": "✅ Feedback saved locally (email unavailable)."}), 200
         else:
