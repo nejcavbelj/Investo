@@ -56,7 +56,10 @@ def receive_feedback():
 
     try:
         # --- Get Data ---
-        data = request.get_json() or request.form
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form
         user = (data.get("user") or "Anonymous").strip()
         message = (data.get("message") or "").strip()
 
