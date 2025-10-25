@@ -111,3 +111,5 @@ def receive_feedback():
         traceback.print_exc()
         flash("❌ An error occurred. Please try again later.", "error")
         return redirect(request.referrer or "/")
+        
+print(f"📨 Feedback API called, data received: {message}")
