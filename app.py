@@ -15,6 +15,14 @@ sys.path.insert(0, str(PROJECT_ROOT))
 app = Flask(__name__, template_folder=str(PROJECT_ROOT / 'templates'))
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
 
+# Add CORS headers to all responses
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
 # Register feedback blueprint
 try:
     from core.feedback_handler import feedback_bp
@@ -233,12 +241,18 @@ def reddit_analysis():
 @app.route('/analyze', methods=['POST'])
 def analyze_stock():
     """Analyze stock and return results"""
+    print(f"\n{'='*60}")
+    print(f"Received analysis request")
+    print(f"{'='*60}")
     try:
         data = request.get_json()
+        print(f"Request data: {data}")
         if not data:
+            print("ERROR: No JSON data received")
             return jsonify({'error': 'Invalid request. Please send JSON data.'}), 400
             
         symbol = data.get('symbol', '').upper().strip()
+        print(f"Analyzing symbol: {symbol}")
         
         if not symbol:
             return jsonify({'error': 'Please enter a valid ticker symbol'}), 400

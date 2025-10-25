@@ -283,13 +283,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symbol })
       })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
+      .then(res => res.json().then(data => ({ status: res.status, data })))
+      .then(({ status, data }) => {
         analyzeBtn.disabled = false;
         loading.classList.remove("show");
 
@@ -313,14 +308,14 @@
             alert(data.message);
           }
         } else {
-          alert("Error analyzing stock.");
+          alert("Unexpected response from server. Please try again.");
         }
       })
       .catch(err => {
         analyzeBtn.disabled = false;
         loading.classList.remove("show");
         console.error("Analysis error:", err);
-        alert("Network error. Please check console for details.");
+        alert("Network error. Unable to connect to server.\nPlease check your connection and try again.");
       });
     }
   </script>
