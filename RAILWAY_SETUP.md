@@ -23,11 +23,16 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
 TELEGRAM_CHAT_ID=your_telegram_chat_id_here
 ```
 
-### Optional (for Feedback form - sends to investosystem@gmail.com):
+### Optional (for Feedback form):
 ```
-GMAIL_APP_PASSWORD=your_gmail_app_password_here
 FLASK_SECRET_KEY=your_random_secret_key_here
+GMAIL_APP_PASSWORD=your_gmail_app_password_here
 ```
+
+**Note:** 
+- Without `GMAIL_APP_PASSWORD`: Feedback saves to `feedback/` directory on Railway
+- With `GMAIL_APP_PASSWORD`: Feedback sends to email AND saves to file
+- `FLASK_SECRET_KEY` is required for flash messages to work
 
 ---
 

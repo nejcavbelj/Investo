@@ -61,6 +61,9 @@ token_data.json
 reports/generated/
 *.pdf
 
+# Feedback
+feedback/
+
 # Test coverage
 .coverage
 htmlcov/

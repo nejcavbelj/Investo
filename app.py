@@ -135,6 +135,12 @@ def status_check():
             "FINNHUB_API_KEY": "set" if os.getenv("FINNHUB_API_KEY") else "missing",
             "OPENAI_API_KEY": "set" if os.getenv("OPENAI_API_KEY") else "missing",
             "REDDIT_CLIENT_ID": "set" if os.getenv("REDDIT_CLIENT_ID") else "missing",
+            "REDDIT_CLIENT_SECRET": "set" if os.getenv("REDDIT_CLIENT_SECRET") else "missing",
+            "REDDIT_USER_AGENT": "set" if os.getenv("REDDIT_USER_AGENT") else "missing",
+        },
+        "optional_features": {
+            "feedback_email": "enabled" if os.getenv("GMAIL_APP_PASSWORD") else "disabled (saves to file only)",
+            "flask_sessions": "enabled" if os.getenv("FLASK_SECRET_KEY") else "using default key"
         }
     }
     return status, 200

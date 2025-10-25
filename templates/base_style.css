@@ -179,28 +179,82 @@ tr:nth-child(even) {
         border: 1px solid #ccc;
     }
 }
-.feedback-box {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 1rem;
-    padding: 1.5em;
-    margin-top: 2em;
+.feedback-section {
+    background: #1b1b1b;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 2em;
+    margin: 2em 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
-  .feedback-box textarea {
+  
+  .feedback-section h2 {
+    color: #FFA500;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    font-size: 1.8em;
+  }
+  
+  .feedback-section p {
+    color: #aaa;
+    font-size: 1em;
+    margin-bottom: 1.5em;
+  }
+  
+  .feedback-section textarea {
     width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 0.5em;
-    padding: 0.8em;
-    resize: vertical;
-    font-family: inherit;
-  }
-  .feedback-box .btn {
-    background: #007bff;
+    background: #181818;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1em;
     color: #fff;
-    border: none;
-    border-radius: 0.5em;
-    padding: 0.6em 1.2em;
-    cursor: pointer;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1em;
+    resize: vertical;
+    transition: border-color 0.3s ease;
   }
-  .feedback-box .btn:hover { opacity: 0.85; }
+  
+  .feedback-section textarea:focus {
+    border-color: #FFA500;
+    outline: none;
+  }
+  
+  .feedback-section input[type="text"] {
+    background: #181818;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 0.8em 1em;
+    color: #fff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+  }
+  
+  .feedback-section input[type="text"]:focus {
+    border-color: #FFA500;
+    outline: none;
+  }
+  
+  .feedback-section button {
+    background: linear-gradient(135deg, #FFA500 0%, #ff8c00 100%);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8em 2em;
+    font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255, 165, 0, 0.3);
+  }
+  
+  .feedback-section button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
+  }
+  
+  .feedback-section button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
   

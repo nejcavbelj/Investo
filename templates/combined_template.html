@@ -566,20 +566,161 @@
       {% endwith %}
     {% endif %}
 
- <div class="feedback-box">
-        <h3>💬 Share Your Feedback</h3>
-        <p style="font-size:0.9em;color:gray;margin-bottom:0.8em;">
-          We'd love to hear what you think about Investo.
+    <!-- Feedback Section -->
+    <div class="feedback-section">
+        <h2 style="color: var(--orange); margin-top: 0;">💬 Share Your Feedback</h2>
+        <p style="color: var(--muted); font-size: 1em; margin-bottom: 1.5em;">
+          We'd love to hear what you think about Investo and this analysis report.
         </p>
       
-        <form method="post" action="/feedback">
-          <textarea name="message" rows="4" placeholder="Write your feedback..." required></textarea>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5em;">
-            <input type="text" name="user" placeholder="Your name (optional)" style="flex:1;margin-right:0.5em;">
-            <button type="submit" class="btn">Send</button>
+        <form id="feedbackForm" method="post" action="/feedback">
+          <div style="margin-bottom: 1em;">
+            <textarea 
+              id="feedbackMessage"
+              name="message" 
+              rows="5" 
+              placeholder="Share your thoughts, suggestions, or report issues..."
+              style="
+                width: 100%;
+                background: #181818;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                padding: 1em;
+                color: var(--ink);
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 1em;
+                resize: vertical;
+                transition: border-color 0.3s ease;
+              "
+              onfocus="this.style.borderColor='var(--orange)'"
+              onblur="this.style.borderColor='var(--line)'"
+              required
+            ></textarea>
+          </div>
+          
+          <div style="display: flex; gap: 1em; align-items: center; flex-wrap: wrap;">
+            <input 
+              type="text" 
+              name="user" 
+              id="feedbackUser"
+              placeholder="Your name (optional)" 
+              style="
+                flex: 1;
+                min-width: 200px;
+                background: #181818;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                padding: 0.8em 1em;
+                color: var(--ink);
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 1em;
+                transition: border-color 0.3s ease;
+              "
+              onfocus="this.style.borderColor='var(--orange)'"
+              onblur="this.style.borderColor='var(--line)'"
+            >
+            <button 
+              type="submit" 
+              id="feedbackSubmitBtn"
+              style="
+                background: linear-gradient(135deg, var(--orange) 0%, #ff8c00 100%);
+                color: #000;
+                border: none;
+                border-radius: 8px;
+                padding: 0.8em 2em;
+                font-weight: 600;
+                font-size: 1em;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(255, 165, 0, 0.3);
+              "
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 165, 0, 0.5)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(255, 165, 0, 0.3)'"
+            >
+              Send Feedback
+            </button>
           </div>
         </form>
-      </div>
+
+        <!-- Feedback Response Message -->
+        <div id="feedbackResponse" style="display: none; margin-top: 1em; padding: 1em; border-radius: 8px;"></div>
+    </div>
+
+    <script>
+      // AJAX Feedback Form Submission
+      document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const submitBtn = document.getElementById('feedbackSubmitBtn');
+        const responseDiv = document.getElementById('feedbackResponse');
+        const message = document.getElementById('feedbackMessage').value;
+        const user = document.getElementById('feedbackUser').value;
+        
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        submitBtn.style.opacity = '0.6';
+        responseDiv.style.display = 'none';
+        
+        // Create FormData
+        const formData = new FormData(form);
+        
+        // Submit via fetch
+        fetch('/feedback', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          // Check if redirect happened (form submission worked)
+          if (response.redirected) {
+            // Show success message
+            showFeedbackMessage('✅ Thank you for your feedback! We appreciate your input.', 'success');
+            form.reset();
+          } else {
+            return response.text().then(text => {
+              // Parse for flash messages or show generic success
+              showFeedbackMessage('✅ Thank you for your feedback!', 'success');
+              form.reset();
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Feedback error:', error);
+          showFeedbackMessage('❌ Failed to send feedback. Please try again.', 'error');
+        })
+        .finally(() => {
+          // Re-enable button
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send Feedback';
+          submitBtn.style.opacity = '1';
+        });
+      });
+      
+      function showFeedbackMessage(message, type) {
+        const responseDiv = document.getElementById('feedbackResponse');
+        
+        if (type === 'success') {
+          responseDiv.style.background = '#1a4d2e';
+          responseDiv.style.border = '1px solid #2d7a4d';
+          responseDiv.style.color = '#66ff99';
+        } else {
+          responseDiv.style.background = '#4d1a1a';
+          responseDiv.style.border = '1px solid #7a2d2d';
+          responseDiv.style.color = '#ff6666';
+        }
+        
+        responseDiv.textContent = message;
+        responseDiv.style.display = 'block';
+        
+        // Auto-hide success message after 5 seconds
+        if (type === 'success') {
+          setTimeout(() => {
+            responseDiv.style.display = 'none';
+          }, 5000);
+        }
+      }
+    </script>
       
 </body>
 </html>
